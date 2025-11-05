@@ -18,7 +18,7 @@ a trainer can either ask its Nokemon to attack the other Nokemon or to heal itse
 ## Transport protocol
 
 The NOKENET protocol is an action based message protocol. It must use the TCP (Transmission Control Protocol) to have
-reliability over the network but also have a more connexion based protocol. It must use the port 7270.
+reliability over the network but also have a more connection based protocol. It must use the port 7270.
 
 Each action must be encoded in UTF-8 and delimited by a newline character (`\n`). Each action must be read as a command
 like one in a command-line application or an old RPG video game.
@@ -48,8 +48,8 @@ Once someone joins the game, the player that will start the game will be chosen 
 
 A player has two possibilities while in a game:
 
-- Attack the other player's Nokemon, reducing his HP
-- Heal his own Nokemon, rising his HP
+- Attack the other player's Nokemon, reducing his health points
+- Heal his own Nokemon, rising his health points (up to the max number of health points he started with)
 
 Each one of those actions will be sent to the server. The server will do the calculations then send the results to the
 players.
@@ -94,11 +94,11 @@ CREATE
 
 #### Response
 
-- `OK`: username was accepted by the server
-- `ERROR <code>`: username was not accepted. There are 3 error codes possible
-    - `8`: command doesn't exist
-    - `42`: command is wrongly formatted
-    - `118`: there is already an existing lobby
+- `OK`: server successfully created the game and joined it
+- `ERROR <code>`: create was not accepted. There are 3 error codes possible
+  - `8`: command doesn't exist
+  - `42`: command is wrongly formatted
+  - `118`: there is already an existing lobby
 
 ### Join
 
@@ -112,11 +112,11 @@ JOIN
 
 #### Response
 
-- `OK`: username was accepted by the server
-- `ERROR <code>`: username was not accepted. There are 3 error codes possible
-    - `8`: command doesn't exist
-    - `42`: command is wrongly formatted
-    - `119`: there is no lobby to join
+- `OK`: server successfully joined the game
+- `ERROR <code>`: join was not accepted. There are 3 error codes possible
+  - `8`: command doesn't exist
+  - `42`: command is wrongly formatted
+  - `119`: there is no lobby to join
 
 ### Quit
 
@@ -130,10 +130,10 @@ QUIT
 
 #### Response
 
-- `OK`: username was accepted by the server
-- `ERROR <code>`: username was not accepted. There are 2 error codes possible
-    - `8`: command doesn't exist
-    - `42`: command is wrongly formatted
+- `OK`: server successfully closed the connection
+- `ERROR <code>`: quit was not accepted. There are 2 error codes possible
+  - `8`: command doesn't exist
+  - `42`: command is wrongly formatted
 
 ### Attack
 
@@ -147,11 +147,13 @@ ATTACK
 
 #### Response
 
-- `OK`: username was accepted by the server
-- `ERROR <code>`: username was not accepted. There are 3 error codes possible
-    - `8`: command doesn't exist
-    - `42`: command is wrongly formatted
-    - `120`: can't attack outside a game
+- `HIT <username> <nb>`: username was accepted by the server
+  - `username`: username of the trainer who's nokemon got hit
+  - `nb`: number of health points deducted
+- `ERROR <code>`: attack was not accepted. There are 3 error codes possible
+  - `8`: command doesn't exist
+  - `42`: command is wrongly formatted
+  - `120`: can't attack outside a game
 
 ### Heal
 
@@ -165,10 +167,12 @@ HEAL
 
 #### Response
 
-- `OK`: username was accepted by the server
-- `ERROR <code>`: username was not accepted. There are 3 error codes possible
-    - `8`: command doesn't exist
-    - `42`: command is wrongly formatted
-    - `121`: can't heal outside a game
+- `HEALED <username> <nb>`: username was accepted by the server
+    - `username`: username of the trainer who's nokemon got healed
+    - `nb`: number of health points healed
+- `ERROR <code>`: heal was not accepted. There are 3 error codes possible
+  - `8`: command doesn't exist
+  - `42`: command is wrongly formatted
+  - `121`: can't heal outside a game
 
 ## Examples
