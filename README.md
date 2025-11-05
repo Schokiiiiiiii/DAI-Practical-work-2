@@ -1,5 +1,28 @@
-# Java TCP programming - Practical content template
+# DAI-Practical-work-2
 
-This repository contains the template to the
-[Java TCP and UDP programming](https://github.com/heig-vd-dai-course/heig-vd-dai-course/tree/main/07.01-java-tcp-and-udp-programming-(1-of-2)/01-course-material)
-practical content.
+## General
+
+- Authors: Fabien Léger & Samuel Dos Santos
+- Course: DAI, HEIG-VD
+
+## Problem
+
+There is no game called Nokemon using its own protocol.
+
+## Idea
+
+Make that game.
+
+## Application protocol
+
+Application protocol link: TBD
+
+## Commands
+
+### How to launch the client/server application
+
+### What you can use
+
+## Credits
+
+us
