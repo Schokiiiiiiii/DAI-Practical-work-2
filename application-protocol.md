@@ -31,7 +31,7 @@ server will refuse the connection.
 Once the client has established the connection, it will be asked to choose a trainer name. This name will be unique. In
 case the name is already taken, the server will send and error.
 
-After that, the server will confirm the name and let the client go to the menu. They can either:
+After that, the server will confirm the name and let the client go through. The client can now either:
 
 - Start a new game
 - Join an existing game
@@ -54,10 +54,121 @@ A player has two possibilities while in a game:
 Each one of those actions will be sent to the server. The server will do the calculations then send the results to the
 players.
 
+If it's not a player's turn but a request is sent by him, an error will be sent by the server.
+
 A game ends once all of a player's Nokemons are defeated.
 
-Players are then sent back to the main menu.
+Players can then again either start a new game, join an existing one or quit.
 
 ## Messages
+
+### Username
+
+Used by the client to send his username to the server.
+
+#### Command
+
+```
+USERNAME <username>
+```
+- `username`: String of characters between 3 and 15 inclusive
+
+#### Response
+
+- `OK`: username was accepted by the server
+- `ERROR <code>`: username was not accepted. There are 3 error codes possible
+  - `8`: command doesn't exist
+  - `42`: command is wrongly formatted
+  - `117`: username is already taken
+
+
+### Create
+
+The client creates a game if there is no existing one already.
+
+#### Command
+
+```
+CREATE
+```
+
+#### Response
+
+- `OK`: username was accepted by the server
+- `ERROR <code>`: username was not accepted. There are 3 error codes possible
+    - `8`: command doesn't exist
+    - `42`: command is wrongly formatted
+    - `118`: there is already an existing lobby
+
+### Join
+
+The client joins the existing game if there is one already created.
+
+#### Command
+
+```
+JOIN
+```
+
+#### Response
+
+- `OK`: username was accepted by the server
+- `ERROR <code>`: username was not accepted. There are 3 error codes possible
+    - `8`: command doesn't exist
+    - `42`: command is wrongly formatted
+    - `119`: there is no lobby to join
+
+### Quit
+
+The client quits the applications and ends the connection.
+
+#### Command
+
+```
+QUIT
+```
+
+#### Response
+
+- `OK`: username was accepted by the server
+- `ERROR <code>`: username was not accepted. There are 2 error codes possible
+    - `8`: command doesn't exist
+    - `42`: command is wrongly formatted
+
+### Attack
+
+During a game, the client sends an attack action for his Nokemon.
+
+#### Command
+
+```
+ATTACK
+```
+
+#### Response
+
+- `OK`: username was accepted by the server
+- `ERROR <code>`: username was not accepted. There are 3 error codes possible
+    - `8`: command doesn't exist
+    - `42`: command is wrongly formatted
+    - `120`: can't attack outside a game
+
+### Heal
+
+During a game, the client sends a heal action for his Nokemon.
+
+#### Command
+
+```
+HEAL
+```
+
+#### Response
+
+- `OK`: username was accepted by the server
+- `ERROR <code>`: username was not accepted. There are 3 error codes possible
+    - `8`: command doesn't exist
+    - `42`: command is wrongly formatted
+    - `121`: can't heal outside a game
 
 ## Examples
