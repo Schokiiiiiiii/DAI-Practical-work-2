@@ -1,0 +1,63 @@
+# Application Protocol
+
+## General
+
+- Authors: Fabien Léger & Samuel Dos Santos
+- Course: DAI, HEIG-VD
+
+## Overview
+
+The Nokemon Internet Protocol (NOKENET) is an interaction protocol for the video game Nokemon.
+It allows users to send actions to the server to interact with the game in a 1 player vs 1 player environment.
+
+A user can also be called player or trainer.
+
+Each player has one single Nokemon. A Nokemon is an animal players use to fight each other. When fighting each other,
+a trainer can either ask its Nokemon to attack the other Nokemon or to heal itself. The game is turn-based.
+
+## Transport protocol
+
+The NOKENET protocol is an action based message protocol. It must use the TCP (Transmission Control Protocol) to have
+reliability over the network but also have a more connexion based protocol. It must use the port 7270.
+
+Each action must be encoded in UTF-8 and delimited by a newline character (`\n`). Each action must be read as a command
+like one in a command-line application or an old RPG video game.
+
+The server must be online for NOKENET to work.
+
+The client will establish the initial connection. In case there are already two players on the server, the
+server will refuse the connection.
+
+Once the client has established the connection, it will be asked to choose a trainer name. This name will be unique. In
+case the name is already taken, the server will send and error.
+
+After that, the server will confirm the name and let the client go to the menu. They can either:
+
+- Start a new game
+- Join an existing game
+- Quit
+
+If the player starts a new game, the server will wait for someone else to join the game. If there is already an existing
+game, the client cannot create a new one.
+
+Joining a game will join automatically if a game already exists.
+
+Quitting will close the connection between the client and the server.
+
+Once someone joins the game, the player that will start the game will be chosen randomly.
+
+A player has two possibilities while in a game:
+
+- Attack the other player's Nokemon, reducing his HP
+- Heal his own Nokemon, rising his HP
+
+Each one of those actions will be sent to the server. The server will do the calculations then send the results to the
+players.
+
+A game ends once all of a player's Nokemons are defeated.
+
+Players are then sent back to the main menu.
+
+## Messages
+
+## Examples
