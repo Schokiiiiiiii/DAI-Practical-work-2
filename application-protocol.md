@@ -135,6 +135,26 @@ QUIT
   - `8`: command doesn't exist
   - `42`: command is wrongly formatted
 
+### Stats
+
+At the start of a game, sent by the server to indicate the two players' stats.
+
+#### Command
+
+```
+STATS <player1> <hp1> <player2> <hp2>
+```
+- `player1`: username of the first player (who created the game)
+- `hp1`: health points of the first player
+- `player2`: username of the second player (who joined the game)
+- `hp2`: health points of the second player
+
+#### Response
+
+- `ERROR <code>`: attack was not accepted. There are 3 error codes possible
+    - `8`: command doesn't exist
+    - `42`: command is wrongly formatted
+
 ### Attack
 
 During a game, the client sends an attack action for his Nokemon.
