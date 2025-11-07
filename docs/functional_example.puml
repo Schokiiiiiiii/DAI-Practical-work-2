@@ -63,6 +63,8 @@ group Game
 
 end
 
+note across : Once a player has lost, the game ends \nand a new one must be created
+
 /'
 loop 
     Server -> Player1
