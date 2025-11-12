@@ -56,7 +56,7 @@ players.
 
 If it's not a player's turn but a request is sent by him, an error will be sent by the server.
 
-A game ends once all of a player's Nokemons are defeated.
+A game ends once all of a player's Nokemons are defeated or that one player quit the game.
 
 Players can then again either start a new game, join an existing one or quit.
 
@@ -76,10 +76,10 @@ USERNAME <username>
 #### Response
 
 - `OK`: username was accepted by the server
-- `ERROR <code>`: username was not accepted. There are 3 error codes possible
-  - `8`: command doesn't exist
-  - `42`: command is wrongly formatted
-  - `117`: username is already taken
+- `ERROR <code>`: username was not accepted. There are 2 error codes possible
+  - `10`: command doesn't exist
+  - `210`: username is already taken
+  - `410`: can't do this command now
 
 
 ### Create
@@ -95,10 +95,10 @@ CREATE
 #### Response
 
 - `OK`: server successfully created the game and joined it
-- `ERROR <code>`: create was not accepted. There are 3 error codes possible
-  - `8`: command doesn't exist
-  - `42`: command is wrongly formatted
-  - `118`: there is already an existing lobby
+- `ERROR <code>`: create was not accepted. There are 2 error codes possible
+  - `10`: command doesn't exist
+  - `310`: there is already an existing lobby
+  - `410`: can't do this command now
 
 ### Join
 
@@ -114,13 +114,14 @@ JOIN
 
 - `OK`: server successfully joined the game
 - `ERROR <code>`: join was not accepted. There are 3 error codes possible
-  - `8`: command doesn't exist
-  - `42`: command is wrongly formatted
-  - `119`: there is no lobby to join
+  - `10`: command doesn't exist
+  - `320`: there is no lobby to join
+  - `321`: lobby is already full
+  - `410`: can't do this command now
 
 ### Quit
 
-The client quits the applications and ends the connection.
+The client quits the application and ends the connection.
 
 #### Command
 
@@ -131,9 +132,8 @@ QUIT
 #### Response
 
 - `OK`: server successfully closed the connection
-- `ERROR <code>`: quit was not accepted. There are 2 error codes possible
-  - `8`: command doesn't exist
-  - `42`: command is wrongly formatted
+- `ERROR <code>`: quit was not accepted. There is one error code possible
+  - `10`: command doesn't exist
 
 ### Stats
 
@@ -151,9 +151,9 @@ STATS <player1> <hp1> <player2> <hp2>
 
 #### Response
 
-- `ERROR <code>`: attack was not accepted. There are 3 error codes possible
-    - `8`: command doesn't exist
-    - `42`: command is wrongly formatted
+- `ERROR <code>`: attack was not accepted. There is 1 error code possible
+    - `10`: command doesn't exist
+    - `410`: can't do this command now
 
 ### Attack
 
@@ -170,10 +170,9 @@ ATTACK
 - `HIT <username> <nb>`: username was accepted by the server
   - `username`: username of the trainer who's nokemon got hit
   - `nb`: number of health points deducted
-- `ERROR <code>`: attack was not accepted. There are 3 error codes possible
-  - `8`: command doesn't exist
-  - `42`: command is wrongly formatted
-  - `120`: can't attack outside a game
+- `ERROR <code>`: attack was not accepted. There are 2 error codes possible
+  - `10`: command doesn't exist
+  - `410`: can't do this command now
 
 ### Heal
 
@@ -190,9 +189,8 @@ HEAL
 - `HEALED <username> <nb>`: username was accepted by the server
     - `username`: username of the trainer who's nokemon got healed
     - `nb`: number of health points healed
-- `ERROR <code>`: heal was not accepted. There are 3 error codes possible
-  - `8`: command doesn't exist
-  - `42`: command is wrongly formatted
-  - `121`: can't heal outside a game
+- `ERROR <code>`: heal was not accepted. There are 2 error codes possible
+  - `10`: command doesn't exist
+  - `410`: can't do this command now
 
 ## Examples
