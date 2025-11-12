@@ -63,7 +63,13 @@ group Game
 
 end
 
-note across : Once a player has lost, the game ends \nand a new one must be created
+note across : Players can make a new game or quit
+
+group Close connection
+    Player1 -> Server : QUIT
+    ...
+    Player2 -> Server : QUIT
+end
 
 /'
 loop 
