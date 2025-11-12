@@ -1,0 +1,34 @@
+@startuml functional_example
+
+/'
+https://github.com/heig-vd-dai-course/heig-vd-dai-course/blob/main/06.01-define-an-application-protocol/03-solution/01-guess-the-number-game/README.md
+'/
+
+actor Bob as Player1 #PaleGreen
+Participant Server #OrangeRed
+actor Alice as Player2 #PaleTurquoise
+
+autonumber
+
+note across : Connection is already established
+
+...
+
+
+group Game command in "Lobby"
+    Player1 -> Server : ATTACK
+    Server -> Player1 : ERROR 410
+    Player2 -> Server : HEAL
+    Server -> Player2 : ERROR 410
+end
+
+group "Lobby" commands in game
+    Player1 -> Server : JOIN
+    Server -> Player1 : ERROR 410
+    Player2 -> Server : USERNAME Ecila
+    Server -> Player2 : ERROR 410
+    Player1 -> Server : CREATE
+    Server -> Player1 : ERROR 410
+end
+
+@endum

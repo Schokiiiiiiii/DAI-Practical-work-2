@@ -1,0 +1,23 @@
+@startuml functional_example
+
+/'
+https://github.com/heig-vd-dai-course/heig-vd-dai-course/blob/main/06.01-define-an-application-protocol/03-solution/01-guess-the-number-game/README.md
+'/
+
+actor Bob as Player1 #PaleGreen
+Participant Server #OrangeRed
+actor Alice as Player2 #PaleTurquoise
+
+autonumber
+
+note across : Connection is already established
+
+...
+
+Player1 -> Server : USERNAME Bob
+group Username already taken error
+    Player2 -> Server : USERNAME Bob
+    Server -> Player2 : ERROR 210
+end
+
+@endum

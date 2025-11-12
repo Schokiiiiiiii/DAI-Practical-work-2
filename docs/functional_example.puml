@@ -57,7 +57,7 @@ group Game
     note across : Game continues...
     ...
 
-    Player2 -> Server : ATTACK Bob 14
+    Player2 -> Server : ATTACK
     Server -> Player1 : LOST Bob
     Server -> Player2 : LOST Bob
 
