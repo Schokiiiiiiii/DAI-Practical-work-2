@@ -1,4 +1,4 @@
-@startuml functional_example
+@startuml connection_lost_during_game_example
 
 /'
 https://github.com/heig-vd-dai-course/heig-vd-dai-course/blob/main/06.01-define-an-application-protocol/03-solution/01-guess-the-number-game/README.md
