@@ -1,3 +1,3 @@
 package ch.heigvd.dai.utils;
 
-public enum CommandsName { BONJOUR }
+public enum CommandNames { USERNAME, CREATE, JOIN, QUIT, STATS, ATTACK, HEAL }
