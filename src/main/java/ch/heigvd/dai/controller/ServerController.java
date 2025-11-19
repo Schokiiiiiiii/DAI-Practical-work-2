@@ -1,6 +1,8 @@
 package ch.heigvd.dai.controller;
 
 import ch.heigvd.dai.network.ServerNetwork;
+import ch.heigvd.dai.applicationInterface.ServerInterface;
+import ch.heigvd.dai.game.*;
 
 public class ServerController extends Controller implements Runnable{
     private int nbClients;
@@ -15,10 +17,8 @@ public class ServerController extends Controller implements Runnable{
 
         // Service/Game loop
         while(true){
+
             if(true) break;
         }
-
-
     }
-
 }
