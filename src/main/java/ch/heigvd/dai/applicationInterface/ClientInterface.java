@@ -1,10 +1,12 @@
 package ch.heigvd.dai.applicationInterface;
 
-import ch.heigvd.dai.network.ClientNetwork;
+import ch.heigvd.dai.controller.*;
 
 import java.util.Scanner;
 
 public class ClientInterface {
+
+    private Controller controller;
 
     public void showInterface() {
         System.out.println("Menu");
