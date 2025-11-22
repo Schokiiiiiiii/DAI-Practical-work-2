@@ -3,7 +3,7 @@ package ch.heigvd.dai.commands;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
-import ch.heigvd.dai.network.*;
+import ch.heigvd.dai.controller.ClientController;
 
 @CommandLine.Command(name = "client", description = "Start the client part of the network game.")
 public class Client implements Callable<Integer> {
@@ -23,10 +23,10 @@ public class Client implements Callable<Integer> {
   @Override
   public Integer call() {
 
-      ClientNetwork clientNetwork = new ClientNetwork();
+      ClientController clientController = new ClientController();
 
       // define network
 
-      return clientNetwork.run();
+      return clientController.run(host, port);
   }
 }
