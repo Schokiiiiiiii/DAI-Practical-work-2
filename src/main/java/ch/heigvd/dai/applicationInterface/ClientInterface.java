@@ -31,16 +31,40 @@ public class ClientInterface {
         return getUserInput("Enter your username");
     }
 
-    public void displayServerAnswer(ServerAnswers command){
+
+
+    public void displayServerAnswer(ServerAnswers command, String[] commandArgs){
         switch(command){
             case OK :
                 System.out.println(translator.ok());
                 break;
+            case ERROR:
+                // The protocole always defines the error code as the second argument
+                int errorCode = Integer.parseInt(commandArgs[1]);
+                displayError(errorCode);
             case HIT:
+                // HIT <usename> <damage received>
+                System.out.println(commandArgs[1] + " was hit for " + commandArgs[2] + " damage");
                 break;
             case HEALED:
+                // HEALED <usename> <health received>
+                System.out.println(commandArgs[1] + " healed for " + commandArgs[2] + " HP");
                 break;
             case LOST:
+                System.out.println("lost");
+                break;
+            case STATS:
+                // STATICS <player1> <hp1> <player2> <hp2>
+                String player1 = commandArgs[1];
+                int hp1 = Integer.parseInt(commandArgs[2]);
+                String player2 = commandArgs[3];
+                int hp2 = Integer.parseInt(commandArgs[4]);
+
+                // Diplay game upadte in a little box for better readability in high-tension games.
+                System.out.println("====Game Update====");
+                System.out.println(player1 + " : " + hp1 + " HP");
+                System.out.println(player2 + " : " + hp2 + " HP");
+                System.out.println("==================");
                 break;
         }
     }
