@@ -18,5 +18,31 @@ public class NokeNetTranslator {
         return "OK";
     }
 
-    // ...
+    public String create(){
+        return "CREATE";
+    }
+
+    public String join(){
+        return "JOIN";
+    }
+
+    public String quit(){
+        return "QUIT";
+    }
+
+    public ServerAnswers extractResponse(String[] response) {
+        if (response == null || response.length == 0) {
+            return null;
+        }
+
+        try {
+            return ServerAnswers.valueOf(response[0].toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // valueOf throws exception
+            return null;
+        }
+    }
+
+
+        // ...
 }

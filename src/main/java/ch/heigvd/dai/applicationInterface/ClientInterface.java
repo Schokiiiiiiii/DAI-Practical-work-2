@@ -31,8 +31,6 @@ public class ClientInterface {
         return getUserInput("Enter your username");
     }
 
-
-
     public void displayServerAnswer(ServerAnswers command, String[] commandArgs){
         switch(command){
             case OK :
@@ -79,5 +77,18 @@ public class ClientInterface {
             case 410 -> "Can't do this command now";
             default -> "Unknown error (" + errorCode + ")";
         });
+    }
+
+    public void showLobbyMenu() {
+        System.out.println("\n=== Lobby Menu ===");
+        System.out.println("1. CREATE - Create a new game");
+        System.out.println("2. JOIN - Join existing game");
+        System.out.println("3. QUIT - Exit");
+    }
+
+    public void showGameMenu() {
+        System.out.println("\n=== Your Turn ===");
+        System.out.println("1. ATTACK - Attack opponent");
+        System.out.println("2. HEAL - Heal your Nokemon");
     }
 }
