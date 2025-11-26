@@ -4,6 +4,7 @@ import ch.heigvd.dai.network.ClientNetwork;
 import ch.heigvd.dai.applicationInterface.ClientInterface;
 
 import ch.heigvd.dai.game.*;
+import ch.heigvd.dai.nokenet.CommandNames;
 import ch.heigvd.dai.nokenet.NokeNetTranslator;
 import ch.heigvd.dai.nokenet.ServerAnswers;
 
@@ -13,6 +14,7 @@ public class ClientController extends Controller{
     private NokeNetTranslator translator;
 
     private boolean inGame = false;
+    private boolean myTurn = false;
     private String username;
 
     private void createNetwork() {
@@ -34,13 +36,35 @@ public class ClientController extends Controller{
             return -1;
         }
 
-        // Lobby loop
+        // Start lobby loop
         manageLobby();
+
+        inGame = true;
+
         // "Game"/Service loop
-        while(true){
+        while(inGame){
+            if(myTurn){
+                boolean inGameAction = true;
+                while(inGameAction) {
 
+                    ui.showGameMenu();
+                    String choice = ui.getUserInput("Choose an option");
 
-            break;
+                    switch (choice) {
+                        case "1":
+                            network.send(translator.attack());
+                            inGameAction = false;
+                            break;
+                        case "2":
+                            network.send(translator.heal());
+                            inGameAction = false;
+                            break;
+                        default:
+                            System.out.println("Invalid option, try again.");
+                            break;
+                    }
+                }
+            }
         }
 
         return 0;
@@ -59,6 +83,11 @@ public class ClientController extends Controller{
         ui.displayServerAnswer(responseType, parsedResponse);
 
         switch(responseType){
+            case STATS :
+                if(username == parsedResponse[1]){
+                    myTurn = true;
+                }
+                return true;
             case ERROR :
                 // The last command sent has failed
                 return false;
@@ -82,20 +111,20 @@ public class ClientController extends Controller{
 
             switch (choice){
                 case "1" :
-                    network.send(translator.create());
+                    network.send(CommandNames.CREATE.toString());
                     // Hadnle server response
                     if(handleServerResponse()){
                         System.out.printf("Waiting for another player to join the game...");
                         return 0;
                     }
                 case "2" :
-                    network.send(translator.join());
+                    network.send(CommandNames.JOIN.toString());
                     if(handleServerResponse()){
                         System.out.println("Joining game...");
                         return 0;
                     }
                 case "3" :
-                    network.send(translator.quit());
+                    network.send(CommandNames.QUIT.toString());
                     network.closeNetwork();
                     return 1;
                 default:
