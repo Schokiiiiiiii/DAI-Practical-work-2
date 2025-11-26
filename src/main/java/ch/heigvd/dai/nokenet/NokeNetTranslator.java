@@ -15,19 +15,19 @@ public class NokeNetTranslator {
     }
 
     public String ok(){
-        return "OK";
+        return ServerAnswers.OK.toString();
     }
 
     public String create(){
-        return "CREATE";
+        return CommandNames.CREATE.toString();
     }
 
     public String join(){
-        return "JOIN";
+        return CommandNames.JOIN.toString();
     }
 
     public String quit(){
-        return "QUIT";
+        return CommandNames.QUIT.toString();
     }
 
     public String attack(){
