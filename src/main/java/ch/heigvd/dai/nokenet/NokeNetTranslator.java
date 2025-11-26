@@ -30,6 +30,14 @@ public class NokeNetTranslator {
         return "QUIT";
     }
 
+    public String attack(){
+        return CommandNames.ATTACK.toString();
+    }
+
+    public String heal(){
+        return CommandNames.HEAL.toString();
+    }
+
     public ServerAnswers extractResponse(String[] response) {
         if (response == null || response.length == 0) {
             return null;
