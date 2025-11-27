@@ -59,7 +59,6 @@ public class ServerNetwork {
      * @param in buffer to read from
      * @param socket socket to close in case connection got closed
      * @return table of strings representing the message parsed
-     * @throws IOException reading the buffer or closing the socket could throw
      */
     public static String[] receive(BufferedReader in, Socket socket) {
 
@@ -91,7 +90,6 @@ public class ServerNetwork {
      * Send a message in buffer
      * @param out buffer to write in
      * @param answer message to write
-     * @throws IOException writing in the buffer could throw
      * @implNote synchronized because sending result of a P1 action to P2
      *           and answering to a command from P2 at the same time could interfere each other
      */
