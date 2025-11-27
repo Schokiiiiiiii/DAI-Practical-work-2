@@ -79,6 +79,8 @@ public class ServerNetwork {
      * @param out buffer to write in
      * @param answer message to write
      * @throws IOException writing in the buffer could throw
+     * @implNote synchronized because sending result of a P1 action to P2
+     *           and answering to a command from P2 at the same time could interfere each other
      */
     public synchronized static void send (BufferedWriter out, String answer) throws IOException {
         out.write(answer);

@@ -1,13 +1,9 @@
 package ch.heigvd.dai.commands;
 
 import java.util.concurrent.Callable;
-
-import ch.heigvd.dai.network.ClientNetwork;
-import ch.heigvd.dai.network.ServerNetwork;
-
-import ch.heigvd.dai.controller.ServerController;
-import ch.heigvd.dai.network.ServerNetwork;
 import picocli.CommandLine;
+
+import ch.heigvd.dai.network.ServerNetwork;
 
 @CommandLine.Command(name = "server", description = "Start the server part of the network game.")
 public class Server implements Callable<Integer> {
