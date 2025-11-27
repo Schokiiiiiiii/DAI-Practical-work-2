@@ -1,8 +1,11 @@
 package ch.heigvd.dai.game;
 
 import ch.heigvd.dai.controller.ServerController;
+import ch.heigvd.dai.network.ServerNetwork;
+import ch.heigvd.dai.nokenet.ServerAnswers;
 
-import java.io.BufferedWriter;
+import java.io.IOException;
+import java.net.Socket;
 
 public class Game {
 
@@ -49,8 +52,14 @@ public class Game {
     // *******************
 
     // ******* SET *******
-    public void setPlayer1(ServerController player) { this.player1 = player; }
-    public void setPlayer2(ServerController player) { this.player2 = player; }
+    public void setPlayer1(ServerController player) {
+        this.player1 = player;
+    }
+
+    public void setPlayer2(ServerController player) {
+        this.player2 = player;
+    }
+
     public void setTurn(ServerController player) {
         this.turn = player;
     }
@@ -71,6 +80,26 @@ public class Game {
 
         player.receiveHeal(heal);
         turn = otherPlayer;
+    }
+
+    public void sendToOtherPlayer(ServerController player, String message) {
+
+        ServerController otherPlayer = getOtherPlayer(player);
+
+        otherPlayer.sendMessageFromGame(message);
+    }
+
+    public void sendStatsToBothPlayers() {
+
+        if (player1 == null || player2 == null)
+            return;
+
+        String message = ServerAnswers.STATS + " "
+                + player1.getUsername() + " " + player1.getNokemonHp() + " "
+                + player2.getUsername() + " " + player2.getNokemonHp() + " ";
+
+        player1.sendMessageFromGame(message);
+        player2.sendMessageFromGame(message);
     }
     // *******************
 

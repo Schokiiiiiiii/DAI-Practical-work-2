@@ -120,9 +120,8 @@ public class ServerController extends Controller implements Runnable{
     /**
      * Chose the correct answer based on the message received from the client
      * @param message table of strings representing the message parsed
-     * @throws IOException can throw if message can't be sent
      */
-    public void handleMessage(String[] message) throws IOException {
+    public void handleMessage(String[] message) {
 
         // try to read command from message
         CommandNames command = ServerInterface.extractCommand(message);
@@ -134,7 +133,7 @@ public class ServerController extends Controller implements Runnable{
             case JOIN       -> joinGame();
             case ATTACK     -> attack();
             case HEAL       -> heal();
-            default         -> ServerAnswers.ERROR + " " + ErrorCode.NOT_COMMAND;
+            default         -> ServerAnswers.ERROR + " " + ErrorCode.NOT_COMMAND.getCode();
         };
 
         // send answer
@@ -149,13 +148,18 @@ public class ServerController extends Controller implements Runnable{
      */
     private synchronized String setName(String name) {
 
-        if (username == null) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW;
+        // if already a username
+        if (username != null) {
+            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+        // if username is already taken
         } else if (players.contains(name)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.USERNAME_TAKEN;
+            return ServerAnswers.ERROR + " " + ErrorCode.USERNAME_TAKEN.getCode();
         }
 
+        // fix username and add player to the list
+        this.username = name;
         players.add(name);
+
         return ServerAnswers.OK.toString();
     }
 
@@ -166,10 +170,12 @@ public class ServerController extends Controller implements Runnable{
      */
     private synchronized String createGame() {
 
-        if (username == null || game.isPlayer1(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW;
+        // if choosing name or already in game
+        if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
+            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+        // no player 1 (lobby not created)
         } else if (!game.isPlayer1(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.EXISTING_LOBBY;
+            return ServerAnswers.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
         }
 
         // set first player
@@ -185,22 +191,23 @@ public class ServerController extends Controller implements Runnable{
      */
     private synchronized String joinGame() {
 
-        // chosing his name or already ingame
+        // choosing his name or already in game
         if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW;
+            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         // no player 1 (lobby not created)
         } else if (game.isPlayer1(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NO_LOBBY;
+            return ServerAnswers.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
         // already a player 2
         } else if (!game.isPlayer2(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.LOBBY_FULL;
+            return ServerAnswers.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
         }
 
         // set second player and turn
         game.setPlayer2(this);
         game.setTurn(this);
 
-        // TODO send STATS
+        // send stats to both players
+        game.sendStatsToBothPlayers();
 
         return ServerAnswers.OK.toString();
     }
@@ -211,9 +218,9 @@ public class ServerController extends Controller implements Runnable{
      */
     private String attack() {
 
-        // if it's not our turn, error
+        // if it's not our turn
         if (!game.hasTurn(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW;
+            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         }
 
         // calculate random damage
@@ -226,11 +233,16 @@ public class ServerController extends Controller implements Runnable{
         if (game.onePlayerLost())
             game.endGame();
 
+        // build message
+        String message = ServerAnswers.HIT + " " +
+                            game.getOtherPlayerName(this) + " " +
+                            damage;
+
+        // send result of attack to other player
+        game.sendToOtherPlayer(this, message);
+
         // return the result of the attack
-        // TODO send to both
-        return ServerAnswers.HIT + " " +
-                game.getOtherPlayerName(this) + " " +
-                damage;
+        return message;
     }
 
     /**
@@ -239,9 +251,9 @@ public class ServerController extends Controller implements Runnable{
      */
     private String heal() {
 
-        // if it's not our turn, error
+        // if it's not our turn
         if (!game.hasTurn(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW;
+            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         }
 
         // calculate random heal
@@ -250,11 +262,20 @@ public class ServerController extends Controller implements Runnable{
         // heal this player
         game.healThisPlayer(this, heal);
 
-        // return the result of the heal
-        // TODO send to both
-        return ServerAnswers.HEALED + " " +
-                username + " " +
-                heal;
+        // build message
+        String message = ServerAnswers.HEALED + " " +
+                            username + " " +
+                            heal;
+
+        // send result of heal to other player
+        game.sendToOtherPlayer(this, message);
+
+        // return the result of heal
+        return message;
+    }
+
+    public void sendMessageFromGame(String message) {
+        ServerNetwork.send(out, message);
     }
     // ***************
 }

@@ -61,19 +61,30 @@ public class ServerNetwork {
      * @return table of strings representing the message parsed
      * @throws IOException reading the buffer or closing the socket could throw
      */
-    public static String[] receive(BufferedReader in, Socket socket) throws IOException {
+    public static String[] receive(BufferedReader in, Socket socket) {
 
-        // get user input
-        String userInput = in.readLine();
+        String[] message = null;
 
-        // if user input is null, client disconnected
-        if (userInput == null) {
-            socket.close();
-            return null;
+        try (in;
+             socket) {
+
+            // get user input
+            String userInput = in.readLine();
+
+            // if user input is null, client disconnected
+            if (userInput == null) {
+                socket.close();
+                return null;
+            }
+
+            message = userInput.split(" ", 5);
+
+        } catch (IOException e) {
+            System.out.println("[Server] Error while receiving client socket: " + e);
         }
 
         // parse it to extract each part
-        return userInput.split(" ", 5);
+        return message;
     }
 
     /**
@@ -84,7 +95,12 @@ public class ServerNetwork {
      * @implNote synchronized because sending result of a P1 action to P2
      *           and answering to a command from P2 at the same time could interfere each other
      */
-    public synchronized static void send (BufferedWriter out, String answer) throws IOException {
-        out.write(answer +  END_OF_FILE);
+    public synchronized static void send (BufferedWriter out, String answer) {
+        try (out) {
+            out.write(answer + END_OF_FILE);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println("[Server] Error could not send data to client: " + e);
+        }
     }
 }
