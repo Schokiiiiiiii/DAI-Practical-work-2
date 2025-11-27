@@ -1,11 +1,7 @@
 package ch.heigvd.dai.game;
 
 import ch.heigvd.dai.controller.ServerController;
-import ch.heigvd.dai.network.ServerNetwork;
 import ch.heigvd.dai.nokenet.ServerAnswers;
-
-import java.io.IOException;
-import java.net.Socket;
 
 public class Game {
 
