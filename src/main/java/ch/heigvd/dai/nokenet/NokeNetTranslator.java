@@ -7,7 +7,7 @@ package ch.heigvd.dai.nokenet;
 public class NokeNetTranslator {
 
     public String username(String username){
-        return CommandNames.USERNAME + username;
+        return CommandNames.USERNAME + " " + username;
     }
 
     public CommandNames username(){
