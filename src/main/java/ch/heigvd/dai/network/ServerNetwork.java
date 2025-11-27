@@ -64,8 +64,7 @@ public class ServerNetwork {
 
         String[] message = null;
 
-        try (in;
-             socket) {
+        try {
 
             // get user input
             String userInput = in.readLine();
@@ -80,6 +79,7 @@ public class ServerNetwork {
 
         } catch (IOException e) {
             System.out.println("[Server] Error while receiving client socket: " + e);
+            return null;
         }
 
         // parse it to extract each part
@@ -93,12 +93,16 @@ public class ServerNetwork {
      * @implNote synchronized because sending result of a P1 action to P2
      *           and answering to a command from P2 at the same time could interfere each other
      */
-    public synchronized static void send (BufferedWriter out, String answer) {
-        try (out) {
+    public synchronized static int  send (BufferedWriter out, String answer) {
+
+        try {
             out.write(answer + END_OF_FILE);
             out.flush();
         } catch (IOException e) {
             System.out.println("[Server] Error could not send data to client: " + e);
+            return -1;
         }
+
+        return 0;
     }
 }

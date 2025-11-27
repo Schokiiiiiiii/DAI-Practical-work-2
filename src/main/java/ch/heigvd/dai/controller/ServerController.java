@@ -105,7 +105,9 @@ public class ServerController extends Controller implements Runnable{
                     continue;
 
                 // handle message
-                handleMessage(message);
+                if (handleMessage(message) < 0) {
+                    break;
+                }
             }
         } catch (IOException e) {
             System.out.println("[Controller] Error reading/writing from socket: " + e);
@@ -121,7 +123,7 @@ public class ServerController extends Controller implements Runnable{
      * Chose the correct answer based on the message received from the client
      * @param message table of strings representing the message parsed
      */
-    public void handleMessage(String[] message) {
+    public int handleMessage(String[] message) {
 
         // try to read command from message
         CommandNames command = ServerInterface.extractCommand(message);
@@ -137,7 +139,7 @@ public class ServerController extends Controller implements Runnable{
         };
 
         // send answer
-        ServerNetwork.send(out, answer);
+        return ServerNetwork.send(out, answer);
     }
 
     /**
