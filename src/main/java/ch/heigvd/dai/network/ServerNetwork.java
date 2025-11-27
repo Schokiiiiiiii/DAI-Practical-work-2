@@ -17,6 +17,8 @@ public class ServerNetwork {
 
     private final int PORT;
 
+    private static final char END_OF_FILE = '\n';
+
     public ServerNetwork(int port) {
         this.PORT = port;
     }
@@ -83,6 +85,6 @@ public class ServerNetwork {
      *           and answering to a command from P2 at the same time could interfere each other
      */
     public synchronized static void send (BufferedWriter out, String answer) throws IOException {
-        out.write(answer);
+        out.write(answer +  END_OF_FILE);
     }
 }
