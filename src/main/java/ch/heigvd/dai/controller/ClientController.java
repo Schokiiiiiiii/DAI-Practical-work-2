@@ -38,7 +38,6 @@ public class ClientController extends Controller{
     public int run(String host, int port){
         createNetwork();
 
-        ui.showInterface();
         username = ui.getUsername();
         network.send(translator.username(username));
 
@@ -210,8 +209,8 @@ public class ClientController extends Controller{
                     // Server sends STATS first
                     if(handleServerResponse()){
                         // Then server sends OK
-                        handleServerResponse();
                         System.out.println("Joining game...");
+                        handleServerResponse();
                         return 0;
                     }
                     break;

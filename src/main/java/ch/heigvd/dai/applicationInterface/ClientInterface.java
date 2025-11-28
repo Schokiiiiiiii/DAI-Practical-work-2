@@ -17,10 +17,6 @@ public class ClientInterface {
         translator = new NokeNetTranslator();
     }
 
-    public void showInterface() {
-        System.out.println("Menu");
-    }
-
     public String getUserInput(String inputMessage) {
         System.out.print(inputMessage + " > ");
         Scanner scanner = new Scanner(System.in);
@@ -33,9 +29,6 @@ public class ClientInterface {
 
     public void displayServerAnswer(ServerAnswers command, String[] commandArgs){
         switch(command){
-            case OK :
-                System.out.println(translator.ok());
-                break;
             case ERROR:
                 // The protocole always defines the error code as the second argument
                 int errorCode = Integer.parseInt(commandArgs[1]);
