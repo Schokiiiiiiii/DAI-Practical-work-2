@@ -28,12 +28,7 @@ public class ClientController extends Controller{
         this.translator = new NokeNetTranslator();
     }
 
-    private void displayGameStats() {
-        System.out.println("\n====Current Game Status====");
-        System.out.println(username + " (You): " + myHp + " HP");
-        System.out.println(otherPlayerUsername + ": " + otherPlayerHp + " HP");
-        System.out.println("===========================\n");
-    }
+
 
     public int run(String host, int port){
         createNetwork();
@@ -82,7 +77,9 @@ public class ClientController extends Controller{
                 }
 
             } else {
-                // Wait for other player's turn
+                // Wait for the other player's turn
+                ui.waitMessage(otherPlayerUsername);
+
                 if(!handleServerResponse()){
                     inGame = false;
                 }
@@ -123,6 +120,9 @@ public class ClientController extends Controller{
                     otherPlayerUsername = player1Name;
                     myTurn = true;
                 }
+
+                // Display initial game stats after both players have joined the game
+                ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
                 return true;
 
             case HIT :
@@ -139,21 +139,16 @@ public class ClientController extends Controller{
                     myTurn = false;
                 }
 
-                displayGameStats();
+                ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
 
                 // Check for game end
                 if(myHp <= 0) {
-                    System.out.println("\n=====================================");
-                    System.out.println("   YOU LOST! " + otherPlayerUsername + " wins!");
-                    System.out.println("=====================================\n");
+                    ui.printLost();
                     inGame = false;
                 } else if(otherPlayerHp <= 0) {
-                    System.out.println("\n=====================================");
-                    System.out.println("   YOU WON! " + otherPlayerUsername + " is defeated!");
-                    System.out.println("=====================================\n");
+                    ui.printWon();
                     inGame = false;
                 }
-
                 return true;
 
             case HEALED :
@@ -170,7 +165,7 @@ public class ClientController extends Controller{
                     myTurn = true;
                 }
 
-                displayGameStats();
+                ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
                 return true;
 
             case ERROR :
@@ -209,7 +204,7 @@ public class ClientController extends Controller{
                     // Server sends STATS first
                     if(handleServerResponse()){
                         // Then server sends OK
-                        System.out.println("Joining game...");
+                        System.out.println("\nJoining game...");
                         handleServerResponse();
                         return 0;
                     }

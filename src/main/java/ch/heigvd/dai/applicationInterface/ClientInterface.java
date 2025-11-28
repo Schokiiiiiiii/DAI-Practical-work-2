@@ -1,13 +1,12 @@
 package ch.heigvd.dai.applicationInterface;
 
 import ch.heigvd.dai.controller.*;
-import ch.heigvd.dai.nokenet.CommandNames;
 import ch.heigvd.dai.nokenet.NokeNetTranslator;
 import ch.heigvd.dai.nokenet.ServerAnswers;
 
 import java.util.Scanner;
 
-public class ClientInterface {
+public class ClientInterface extends AnsiColors {
 
     private Controller controller;
     private NokeNetTranslator translator;
@@ -24,7 +23,7 @@ public class ClientInterface {
     }
 
     public String getUsername(){
-        return getUserInput("Enter your username");
+        return getUserInput( BOLD + "Enter your username" + RESET);
     }
 
     public void displayServerAnswer(ServerAnswers command, String[] commandArgs){
@@ -35,16 +34,18 @@ public class ClientInterface {
                 displayError(errorCode);
             case HIT:
                 // HIT <usename> <damage received>
-                System.out.println(commandArgs[1] + " was hit for " + commandArgs[2] + " damage");
+                System.out.println(commandArgs[1] + " was hit for " + BRIGHT_RED_F + BOLD + commandArgs[2]
+                        + " damage" + RESET);
                 break;
             case HEALED:
                 // HEALED <usename> <health received>
-                System.out.println(commandArgs[1] + " healed for " + commandArgs[2] + " HP");
+                System.out.println(commandArgs[1] + " healed for " + BRIGHT_GREEN_F + BOLD + commandArgs[2]
+                        + " HP" + RESET);
                 break;
             case LOST:
                 System.out.println("lost");
                 break;
-            case STATS:
+           /* case STATS:
                 // STATICS <player1> <hp1> <player2> <hp2>
                 String player1 = commandArgs[1];
                 int hp1 = Integer.parseInt(commandArgs[2]);
@@ -52,16 +53,16 @@ public class ClientInterface {
                 int hp2 = Integer.parseInt(commandArgs[4]);
 
                 // Diplay game upadte in a little box for better readability in high-tension games.
-                System.out.println("====Game Update====");
+                System.out.println("====PLAYER STATS====");
                 System.out.println(player1 + " : " + hp1 + " HP");
                 System.out.println(player2 + " : " + hp2 + " HP");
-                System.out.println("==================");
-                break;
+                System.out.println("====================");
+                break;*/
         }
     }
 
     private void displayError(int errorCode) {
-        System.out.println("ERROR: " + switch(errorCode) {
+        System.out.println(BRIGHT_RED_B + BLACK_F + "ERROR: " + switch(errorCode) {
             case 10 -> "Command doesn't exist";
             case 210 -> "Username already taken";
             case 310 -> "Lobby already exists";
@@ -69,19 +70,59 @@ public class ClientInterface {
             case 321 -> "Lobby is full";
             case 410 -> "Can't do this command now";
             default -> "Unknown error (" + errorCode + ")";
-        });
+        } + RESET);
     }
 
     public void showLobbyMenu() {
-        System.out.println("\n=== Lobby Menu ===");
-        System.out.println("1. CREATE - Create a new game");
-        System.out.println("2. JOIN - Join existing game");
-        System.out.println("3. QUIT - Exit");
+        System.out.println(BRIGHT_GREEN_F + "\n=== Lobby Menu ===" + RESET);
+        System.out.println(DARK_YELLOW_F + "1" + RESET + ". CREATE - Create a new game");
+        System.out.println(DARK_YELLOW_F + "2" + RESET + ". JOIN - Join existing game");
+        System.out.println(DARK_YELLOW_F + "3" + RESET + ". QUIT - Exit");
     }
 
     public void showGameMenu() {
-        System.out.println("\n=== Your Turn ===");
-        System.out.println("1. ATTACK - Attack opponent");
-        System.out.println("2. HEAL - Heal your Nokemon");
+        System.out.println(DARK_GREEN_B + BLACK_F + BOLD + "    Your Turn    " + RESET);
+        System.out.println(DARK_YELLOW_F + "1" + RESET + ". " + BRIGHT_CYAN_F
+                +  "ATTACK" + RESET + " - Attack opponent");
+        System.out.println(DARK_YELLOW_F + "2" + RESET + ". " + BRIGHT_GREEN_F + "HEAL" + RESET + " - Heal your Nokemon");
+    }
+
+    public void displayGameStats(String username, int myHp, String otherPlayerUsername, int otherPlayerHp) {
+        if(username == null || otherPlayerUsername == null) return;
+        System.out.println();
+        System.out.println(BRIGHT_CYAN_F + BOLD + "====Current Game Status====" + RESET);
+        System.out.println(BOLD + username + " (You): " + RESET + hpStr(myHp));
+        System.out.println(otherPlayerUsername + ": " + hpStr(otherPlayerHp));
+        System.out.println(BRIGHT_CYAN_F + BOLD + "===========================" + RESET);
+        System.out.println();
+    }
+
+    public void waitMessage(String userName){
+        if(userName == null) return;
+        System.out.println(BRIGHT_MAGENTA_F + "Waiting for " + userName + "'s turn..." + RESET);
+    }
+
+    private String hpStr(int hp){
+        // Don't prinr below 0 HP
+        hp = Math.max(0, hp);
+        if(hp < 20){
+            return BRIGHT_RED_F + hp + " HP" + RESET;
+        } else if(hp < 40) {
+            return DARK_YELLOW_F + hp + " HP" + RESET;
+        } else {
+            return BRIGHT_GREEN_F + hp + " HP" + RESET;
+        }
+    }
+
+    public void printLost(){
+        System.out.println(BRIGHT_RED_F + "=====================================");
+        System.out.println("   YOU LOST!   ");
+        System.out.println("=====================================" + RESET);
+    }
+
+    public void printWon(){
+        System.out.println(BRIGHT_GREEN_F + "=====================================");
+        System.out.println("   YOU WON!   ");
+        System.out.println("=====================================" + RESET);
     }
 }
