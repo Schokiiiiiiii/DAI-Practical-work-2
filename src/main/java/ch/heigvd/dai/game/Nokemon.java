@@ -16,12 +16,12 @@ public class Nokemon {
     private final int maxHp;
     private int hp;
 
-    Nokemon() {
+    public Nokemon() {
         this.hp = DEFAULT_HP;
         this.maxHp = this.hp;
     }
 
-    Nokemon(int hp) {
+    public Nokemon(int hp) {
         this.hp = hp;
         this.maxHp = this.hp;
     }

@@ -92,7 +92,7 @@ public class Game {
 
         String message = ServerAnswers.STATS + " "
                 + player1.getUsername() + " " + player1.getNokemonHp() + " "
-                + player2.getUsername() + " " + player2.getNokemonHp() + " ";
+                + player2.getUsername() + " " + player2.getNokemonHp();
 
         player1.sendMessageFromGame(message);
         player2.sendMessageFromGame(message);

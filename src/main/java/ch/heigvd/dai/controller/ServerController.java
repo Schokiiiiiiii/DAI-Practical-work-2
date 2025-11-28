@@ -180,9 +180,10 @@ public class ServerController extends Controller implements Runnable{
             return ServerAnswers.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
         }
 
-        // set first player
+        // initialize nokemon and set first player
+        this.nokemon = new Nokemon();
         game.setPlayer1(this);
-        
+
         return ServerAnswers.OK.toString();
     }
 
@@ -204,7 +205,8 @@ public class ServerController extends Controller implements Runnable{
             return ServerAnswers.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
         }
 
-        // set second player and turn
+        // initialize nokemon and set second player and turn
+        this.nokemon = new Nokemon();
         game.setPlayer2(this);
         game.setTurn(this);
 
@@ -231,17 +233,17 @@ public class ServerController extends Controller implements Runnable{
         // attack other player
         game.attackOtherPlayer(this, damage);
 
-        // if one player lost, end game
-        if (game.onePlayerLost())
-            game.endGame();
-
         // build message
         String message = ServerAnswers.HIT + " " +
-                            game.getOtherPlayerName(this) + " " +
-                            damage;
+                game.getOtherPlayerName(this) + " " +
+                damage;
 
         // send result of attack to other player
         game.sendToOtherPlayer(this, message);
+
+        // if one player lost, end game
+        if (game.onePlayerLost())
+            game.endGame();
 
         // return the result of the attack
         return message;
