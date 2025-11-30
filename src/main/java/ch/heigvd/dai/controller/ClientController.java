@@ -34,6 +34,7 @@ public class ClientController extends Controller{
         createNetwork();
 
         username = ui.getUsername();
+        ui.setMyUsername(username);
         network.send(translator.username(username));
 
         // Get server's response to username
@@ -173,7 +174,8 @@ public class ClientController extends Controller{
                 return false;
 
             case LOST :
-                // Game is lost
+                // LOST <username_who_lost>
+                inGame = false;
                 return true;
         }
         return true;

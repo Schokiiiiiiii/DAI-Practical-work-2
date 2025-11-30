@@ -10,10 +10,15 @@ public class ClientInterface extends AnsiColors {
 
     private Controller controller;
     private NokeNetTranslator translator;
+    private String myUsername;
 
     public ClientInterface() {
         controller = new ClientController();
         translator = new NokeNetTranslator();
+    }
+
+    public void setMyUsername(String username) {
+        this.myUsername = username;
     }
 
     public String getUserInput(String inputMessage) {
@@ -32,6 +37,7 @@ public class ClientInterface extends AnsiColors {
                 // The protocole always defines the error code as the second argument
                 int errorCode = Integer.parseInt(commandArgs[1]);
                 displayError(errorCode);
+                break;
             case HIT:
                 // HIT <usename> <damage received>
                 System.out.println(commandArgs[1] + " was hit for " + BRIGHT_RED_F + BOLD + commandArgs[2]
@@ -43,7 +49,17 @@ public class ClientInterface extends AnsiColors {
                         + " HP" + RESET);
                 break;
             case LOST:
-                System.out.println("lost");
+                // LOST <username_who_lost>
+                if (commandArgs.length > 1) {
+                    String loserUsername = commandArgs[1];
+                    if (loserUsername.equals(myUsername)) {
+                        // I lost
+                        printLost();
+                    } else {
+                        // Opponent lost, I won
+                        printWon();
+                    }
+                }
                 break;
            /* case STATS:
                 // STATICS <player1> <hp1> <player2> <hp2>
@@ -65,8 +81,8 @@ public class ClientInterface extends AnsiColors {
         System.out.println(BRIGHT_RED_B + BLACK_F + "ERROR: " + switch(errorCode) {
             case 10 -> "Command doesn't exist";
             case 210 -> "Username already taken";
-            case 310 -> "Lobby already exists";
-            case 320 -> "No lobby to join";
+            case 310 -> "Game already exists";
+            case 320 -> "No game to join";
             case 321 -> "Lobby is full";
             case 410 -> "Can't do this command now";
             default -> "Unknown error (" + errorCode + ")";

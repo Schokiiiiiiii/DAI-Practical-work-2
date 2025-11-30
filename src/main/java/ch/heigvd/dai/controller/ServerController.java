@@ -100,9 +100,11 @@ public class ServerController extends Controller implements Runnable{
                 // read a message from the client
                 String[] message = ServerNetwork.receive(in, socket);
 
-                // if message is null, socket got closed
-                if (message == null)
-                    continue;
+                // if message is null, socket got close, meaning the client disconnected
+                if (message == null) {
+                    handleDisconnect();
+                    break;
+                }
 
                 // handle message
                 if (handleMessage(message) < 0) {
@@ -111,10 +113,10 @@ public class ServerController extends Controller implements Runnable{
             }
         } catch (IOException e) {
             System.out.println("[Controller] Error reading/writing from socket: " + e);
+        } finally {
+            // Cleanup even if exception occurs
+            handleDisconnect();
         }
-
-        // remove the player at the end
-        players.remove(username);
     }
     // ***************
 
@@ -135,6 +137,7 @@ public class ServerController extends Controller implements Runnable{
             case JOIN       -> joinGame();
             case ATTACK     -> attack();
             case HEAL       -> heal();
+            case QUIT       -> handleQuit();
             default         -> ServerAnswers.ERROR + " " + ErrorCode.NOT_COMMAND.getCode();
         };
 
@@ -280,6 +283,44 @@ public class ServerController extends Controller implements Runnable{
 
     public void sendMessageFromGame(String message) {
         ServerNetwork.send(out, message);
+    }
+
+    /**
+     * Handle a player quitting the game.
+     * If in a running game, tell the opponent and make them the winner.
+     * @return string for the server's answe (OK or ERROR)
+     */
+    private String handleQuit() {
+        // Current player in game then disconnect normally
+        if (game.isPlayer1(this) || game.isPlayer2(this)) {
+            game.handlePlayerDisconnect(this);
+        }
+        // Return OK to acknowledge the QUIT, then the connection will close
+        return ServerAnswers.OK.toString();
+    }
+
+    /**
+     * Handles a player disconnecting.
+     * If in a running game, tell the opponent and make them the winner.
+     * Removes the player from the list.
+     * synchronized because players list is shared
+     */
+    private synchronized void handleDisconnect() {
+        // Player finished registering
+        if (username == null) {
+            return;
+        }
+
+        // Player in an active game, tell the opponent
+        if (game.isPlayer1(this) || game.isPlayer2(this)) {
+            game.handlePlayerDisconnect(this);
+        }
+
+        // Remove the player from the players list
+        players.remove(username);
+
+        // Might be removed or moved in ServerInterface.java
+        System.out.println("[Server log -Controller-] Player " + username + " disconnected");
     }
     // ***************
 }
