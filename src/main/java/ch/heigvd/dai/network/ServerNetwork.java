@@ -1,64 +1,108 @@
 package ch.heigvd.dai.network;
 
-import java.io.*;
-import java.net.ServerSocket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-
 import ch.heigvd.dai.controller.ServerController;
+
+// I/O
+import java.io.*;
+
+// SOCKET
+import java.net.ServerSocket;
+
+// CONCURRENCY
+import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 public class ServerNetwork {
 
-    private ExecutorService executor;
     private final int PORT;
 
-    private ServerSocket serverSocket;
-    private BufferedReader in;
-    private BufferedWriter out;
+    private static final char END_OF_FILE = '\n';
 
     public ServerNetwork(int port) {
-        executor = Executors.newVirtualThreadPerTaskExecutor();
         this.PORT = port;
     }
 
-    public ServerNetwork() {
-        this(7270);
-    }
+    /**
+     * Main run for the server accepting requests
+     * @return 0 if it went well, -1 if an issue happened
+     */
+    public int runServer(){
 
-    public void runServer(){
-        try{
-            this.serverSocket = new ServerSocket(PORT);
+        // connect to server socket and start virtual thread pool
+        try (ServerSocket serverSocket = new ServerSocket(PORT);
+             ExecutorService executor  = Executors.newVirtualThreadPerTaskExecutor()) {
 
-            // Creates a thread for each client that connects
+            // server started...
+            System.out.println("[Server] started on port [" + PORT + "]");
+
+            // create sockets on arrival and launch a ServerController for it
             while (!serverSocket.isClosed()) {
                 Socket clientSocket = serverSocket.accept();
-                executor.submit(new ServerController(this));
+                try {
+                    executor.submit(new ServerController(clientSocket));
+                } catch (RuntimeException e) {
+                    System.out.println("[Server] Error accepting client socket: " + e);
+                }
             }
+
         } catch (IOException e) {
-            System.out.println("exception: " + e);
+            System.out.println("[Server] Error while listening on port [" + PORT + "]: " + e);
+            return -1;
         }
+
+        return 0;
     }
 
-    public void send(String massage){
+    /**
+     * Receive a message from buffer and return the parsed version
+     * @param in buffer to read from
+     * @param socket socket to close in case connection got closed
+     * @return table of strings representing the message parsed
+     */
+    public static String[] receive(BufferedReader in, Socket socket) {
 
-    }
+        String[] message = null;
 
-    public String receive(){
-        return null;
-    }
+        try {
 
-    public boolean isSocketClosed(){
-         return true;
-    }
+            // get user input
+            String userInput = in.readLine();
 
-    public void closeNetwork(){
-        try{
-            serverSocket.close();
-        }catch(Exception e){
-            e.printStackTrace();
+            // if user input is null, client disconnected
+            if (userInput == null) {
+                socket.close();
+                return null;
+            }
+
+            message = userInput.split(" ", 5);
+
+        } catch (IOException e) {
+            System.out.println("[Server] Error while receiving client socket: " + e);
+            return null;
         }
+
+        // parse it to extract each part
+        return message;
+    }
+
+    /**
+     * Send a message in buffer
+     * @param out buffer to write in
+     * @param answer message to write
+     * @implNote synchronized because sending result of a P1 action to P2
+     *           and answering to a command from P2 at the same time could interfere each other
+     */
+    public synchronized static int  send (BufferedWriter out, String answer) {
+
+        try {
+            out.write(answer + END_OF_FILE);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println("[Server] Error could not send data to client: " + e);
+            return -1;
+        }
+
+        return 0;
     }
 }
