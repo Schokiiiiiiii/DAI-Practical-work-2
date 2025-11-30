@@ -8,6 +8,8 @@ import ch.heigvd.dai.nokenet.CommandNames;
 import ch.heigvd.dai.nokenet.NokeNetTranslator;
 import ch.heigvd.dai.nokenet.ServerAnswers;
 
+import java.io.IOException;
+
 public class ClientController extends Controller{
     private ClientNetwork network;
     private ClientInterface ui;
@@ -22,8 +24,8 @@ public class ClientController extends Controller{
     private int otherPlayerHp;
     private static final int MAX_HP = 80;
 
-    private void createNetwork() {
-        this.network = new ClientNetwork();
+    private void createNetwork(String host, int port) throws IOException {
+        this.network = new ClientNetwork(host, port);
         this.ui = new ClientInterface();
         this.translator = new NokeNetTranslator();
     }
@@ -31,15 +33,26 @@ public class ClientController extends Controller{
 
 
     public int run(String host, int port){
-        createNetwork();
+        try {
+            createNetwork(host, port);
+        } catch (IOException e) {
+            System.out.println("Cannot connect to server at " + host + ":" + port + ". Is the server running?");
+            return -1;
+        }
 
         username = ui.getUsername();
         ui.setMyUsername(username);
-        network.send(translator.username(username));
+
+        try {
+            network.send(translator.username(username));
+        } catch (IOException e) {
+            System.out.println("Server connection lost. Game ended.");
+            network.closeNetwork();
+            return -1;
+        }
 
         // Get server's response to username
         if(!handleServerResponse()) {
-            System.out.println("Server refused connection");
             network.closeNetwork();
             return -1;
         }
@@ -58,22 +71,34 @@ public class ClientController extends Controller{
                     ui.showGameMenu();
                     String choice = ui.getUserInput("Choose an option");
 
-                    switch (choice) {
-                        case "1":
-                            network.send(translator.attack());
-                            inGameAction = false;
-                            break;
-                        case "2":
-                            network.send(translator.heal());
-                            inGameAction = false;
-                            break;
-                        default:
-                            System.out.println("Invalid option, try again.");
-                            break;
+                    try {
+                        switch (choice) {
+                            case "1":
+                                network.send(translator.attack());
+                                inGameAction = false;
+                                break;
+                            case "2":
+                                network.send(translator.heal());
+                                inGameAction = false;
+                                break;
+                            default:
+                                System.out.println("Invalid option, try again.");
+                                break;
+                        }
+                    } catch (IOException e) {
+                        System.out.println("Server connection lost. Game ended.");
+                        inGame = false;
+                        break;
                     }
                 }
+
+                if(!inGame) {
+                    break;
+                }
+
                 // Response to our action
                 if(!handleServerResponse()){
+                    System.out.println("Server connection lost. Game ended.");
                     inGame = false;
                 }
 
@@ -82,6 +107,7 @@ public class ClientController extends Controller{
                 ui.waitMessage(otherPlayerUsername);
 
                 if(!handleServerResponse()){
+                    System.out.println("Server connection lost. Game ended.");
                     inGame = false;
                 }
             }
@@ -92,9 +118,16 @@ public class ClientController extends Controller{
     }
 
     private boolean handleServerResponse(){
-        String rawServerResponse = network.receive();
+        String rawServerResponse;
+        try {
+            rawServerResponse = network.receive();
+        } catch (IOException e) {
+            // Connection error while receiving
+            return false;
+        }
+
         if(rawServerResponse == null) {
-            System.out.println("Connection lost");
+            // Server closed connection
             return false;
         }
 
@@ -170,7 +203,8 @@ public class ClientController extends Controller{
                 return true;
 
             case ERROR :
-                // The last command sent has failed
+                // The last command sent has failed - server explicitly rejected it
+                System.out.println("Server refused connection");
                 return false;
 
             case LOST :
@@ -192,31 +226,37 @@ public class ClientController extends Controller{
             ui.showLobbyMenu();
             String choice = ui.getUserInput("Choose an option");
 
-            switch (choice){
-                case "1" :
-                    network.send(CommandNames.CREATE.toString());
-                    // Hadnle server response
-                    if(handleServerResponse()){
-                        System.out.println("Waiting for another player to join the game...");
-                        return 0;
-                    }
-                    break;
-                case "2" :
-                    network.send(CommandNames.JOIN.toString());
-                    // Server sends STATS first
-                    System.out.println("\nJoining game...");
-                    if(handleServerResponse()){
-                        // Then server sends OK
-                        handleServerResponse();
-                        return 0;
-                    }
-                    break;
-                case "3" :
-                    network.send(CommandNames.QUIT.toString());
-                    network.closeNetwork();
-                    return 1;
-                default:
-                    System.out.println("Invalid option, try again.");
+            try {
+                switch (choice){
+                    case "1" :
+                        network.send(CommandNames.CREATE.toString());
+                        // Handle server response
+                        if(handleServerResponse()){
+                            System.out.println("Waiting for another player to join the game...");
+                            return 0;
+                        }
+                        break;
+                    case "2" :
+                        network.send(CommandNames.JOIN.toString());
+                        // Server sends STATS first
+                        System.out.println("\nJoining game...");
+                        if(handleServerResponse()){
+                            // Then server sends OK
+                            handleServerResponse();
+                            return 0;
+                        }
+                        break;
+                    case "3" :
+                        network.send(CommandNames.QUIT.toString());
+                        network.closeNetwork();
+                        return 1;
+                    default:
+                        System.out.println("Invalid option, try again.");
+                }
+            } catch (IOException e) {
+                System.out.println("Server connection lost. Game ended.");
+                network.closeNetwork();
+                return -1;
             }
         }
         return 0;

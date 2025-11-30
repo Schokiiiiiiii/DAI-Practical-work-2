@@ -27,6 +27,11 @@ public class Client implements Callable<Integer> {
 
       // define network
 
-      return clientController.run(host, port);
+      try {
+          return clientController.run(host, port);
+      } catch (Exception e) {
+          System.out.println("Cannot connect to server.");
+          return -1;
+      }
   }
 }

@@ -3,6 +3,7 @@ package ch.heigvd.dai.network;
 import ch.heigvd.dai.controller.ClientController;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
@@ -19,53 +20,52 @@ public class ClientNetwork {
 
     private ClientController controller;
 
-    public ClientNetwork(String HOST, int PORT) {
+    public ClientNetwork(String HOST, int PORT) throws IOException {
         controller = new ClientController();
 
         this.HOST = HOST;
         this.PORT = PORT;
 
-        try{
-            socket = new Socket(HOST, PORT);
-            in = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-            out = new BufferedWriter(
-                    new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+        // Try to connect to server, throw exception if it fails,
+        // should be managed by the controller
+        socket = new Socket(HOST, PORT);
+        in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        out = new BufferedWriter(
+                new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
     }
 
-    public ClientNetwork() {
+    public ClientNetwork() throws IOException {
         this("localhost", 7270);
     }
 
-    public void send(String message){
-        try{
-            out.write(message);
-            out.newLine();
-            out.flush();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+    public boolean isConnected() {
+        return socket != null && !socket.isClosed() && socket.isConnected();
     }
 
-    public String receive(){
-        try{
-            return in.readLine();
-        }catch(Exception e){
-            e.printStackTrace();
-            return null;
+    public void send(String message) throws IOException {
+        if (!isConnected()) {
+            throw new IOException("Not connected to server");
         }
+        out.write(message);
+        out.newLine();
+        out.flush();
+    }
+
+    public String receive() throws IOException {
+        if (!isConnected()) {
+            throw new IOException("Not connected to server");
+        }
+        return in.readLine();
     }
 
     public void closeNetwork(){
         try{
-            socket.close();
             in.close();
             out.close();
-        }catch(Exception e){
-            e.printStackTrace();
+            socket.close();
+        }catch(Exception ignored){
+            // Ignored
         }
     }
 }
