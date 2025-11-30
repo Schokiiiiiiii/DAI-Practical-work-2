@@ -202,9 +202,9 @@ public class ClientController extends Controller{
                 case "2" :
                     network.send(CommandNames.JOIN.toString());
                     // Server sends STATS first
+                    System.out.println("\nJoining game...");
                     if(handleServerResponse()){
                         // Then server sends OK
-                        System.out.println("\nJoining game...");
                         handleServerResponse();
                         return 0;
                     }
