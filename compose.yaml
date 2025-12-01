@@ -1,6 +1,11 @@
+# This compose.yaml is not necessary to function but works
+# You can launch it by using docker build -t nokemon .
+# Then docker compose up server
+#
+
 services:
   server:
-    build: .
+    image: ghcr.io/schokiiiiiiii/dai-practical-work-2:nokemon-latest
     container_name: nokemon-server
     ports:
       - "7270:7270"          # optional: expose to host
@@ -9,7 +14,7 @@ services:
     command: ["server"]
 
   client:
-    build: .
+    image: ghcr.io/schokiiiiiiii/dai-practical-work-2:nokemon-latest
     container_name: nokemon-client
     depends_on:
       - server
