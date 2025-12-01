@@ -1,27 +1,12 @@
 # DAI-Practical-work-2
 
-## General
+## Table of contents
+- [Authors](#authors)
 
-- Authors: Fabien Léger & Samuel Dos Santos
-- Course: DAI, HEIG-VD
+## Authors
 
-## Problem
+## Overview
 
-There is no game called Nokemon using its own protocol.
+## Usage
 
-## Idea
-
-Make that game.
-
-## Application protocol
-
-Application protocol link: [here](/docs/application-protocol.md)
-## Commands
-
-### How to launch the client/server application
-
-### What you can use
-
-## Credits
-
-us
+## Contribute
