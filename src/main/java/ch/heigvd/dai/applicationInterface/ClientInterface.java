@@ -36,8 +36,12 @@ public class ClientInterface extends AnsiColors {
         switch(command){
             case ERROR:
                 // The protocole always defines the error code as the second argument
-                int errorCode = Integer.parseInt(commandArgs[1]);
-                displayError(errorCode);
+                try {
+                    int errorCode = Integer.parseInt(commandArgs[1]);
+                    displayError(errorCode);
+                } catch (NumberFormatException e) {
+                    System.out.println(BRIGHT_RED_B + BLACK_F + "ERROR: Server sent invalid error code" + RESET);
+                }
                 break;
             case HIT:
                 // HIT <usename> <damage received>

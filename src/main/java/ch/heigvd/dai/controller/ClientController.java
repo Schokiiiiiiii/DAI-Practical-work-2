@@ -134,68 +134,83 @@ public class ClientController extends Controller{
 
         switch(responseType){
             case STATS :
-                String player1Name = parsedResponse[1];
-                int player1Hp = Integer.parseInt(parsedResponse[2]);
-                String player2Name = parsedResponse[3];
-                int player2Hp = Integer.parseInt(parsedResponse[4]);
+                try {
+                    String player1Name = parsedResponse[1];
+                    int player1Hp = Integer.parseInt(parsedResponse[2]);
+                    String player2Name = parsedResponse[3];
+                    int player2Hp = Integer.parseInt(parsedResponse[4]);
 
-                if(username.equals(player1Name)){
-                    myHp = player1Hp;
-                    otherPlayerHp = player2Hp;
-                    otherPlayerUsername = player2Name;
-                    myTurn = false;
-                } else {
-                    myHp = player2Hp;
-                    otherPlayerHp = player1Hp;
-                    otherPlayerUsername = player1Name;
-                    myTurn = true;
+                    if(username.equals(player1Name)){
+                        myHp = player1Hp;
+                        otherPlayerHp = player2Hp;
+                        otherPlayerUsername = player2Name;
+                        myTurn = false;
+                    } else {
+                        myHp = player2Hp;
+                        otherPlayerHp = player1Hp;
+                        otherPlayerUsername = player1Name;
+                        myTurn = true;
+                    }
+
+                    // Display initial game stats after both players have joined the game
+                    ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
+                } catch (NumberFormatException e) {
+                    System.out.println("Server sent invalid HP values. Connection lost.");
+                    return false;
                 }
-
-                // Display initial game stats after both players have joined the game
-                ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
                 return true;
 
             case HIT :
-                String hitTarget = parsedResponse[1];
-                int damage = Integer.parseInt(parsedResponse[2]);
+                try {
+                    String hitTarget = parsedResponse[1];
+                    int damage = Integer.parseInt(parsedResponse[2]);
 
-                if(hitTarget.equals(username)){
-                    myHp -= damage;
+                    if(hitTarget.equals(username)){
+                        myHp -= damage;
 
-                    // We receive damage, so it's the other player who played last
-                    myTurn = true;
-                } else {
-                    otherPlayerHp -= damage;
-                    myTurn = false;
-                }
+                        // We receive damage, so it's the other player who played last
+                        myTurn = true;
+                    } else {
+                        otherPlayerHp -= damage;
+                        myTurn = false;
+                    }
 
-                ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
+                    ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
 
-                // Check for game end
-                if(myHp <= 0) {
-                    ui.printLost();
-                    inGame = false;
-                } else if(otherPlayerHp <= 0) {
-                    ui.printWon();
-                    inGame = false;
+                    // Check for game end
+                    if(myHp <= 0) {
+                        ui.printLost();
+                        inGame = false;
+                    } else if(otherPlayerHp <= 0) {
+                        ui.printWon();
+                        inGame = false;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Server sent invalid damage value. Connection lost.");
+                    return false;
                 }
                 return true;
 
             case HEALED :
                 // HEALED <healer_name> <heal_amount>
-                String healer = parsedResponse[1];
-                int heal = Integer.parseInt(parsedResponse[2]);
+                try {
+                    String healer = parsedResponse[1];
+                    int heal = Integer.parseInt(parsedResponse[2]);
 
-                if(username.equals(healer)){
-                    // Not allows exceeding max HP
-                    myHp = Math.min(myHp + heal, MAX_HP);
-                    myTurn = false;
-                } else {
-                    otherPlayerHp = Math.min(otherPlayerHp + heal, MAX_HP);
-                    myTurn = true;
+                    if(username.equals(healer)){
+                        // Not allows exceeding max HP
+                        myHp = Math.min(myHp + heal, MAX_HP);
+                        myTurn = false;
+                    } else {
+                        otherPlayerHp = Math.min(otherPlayerHp + heal, MAX_HP);
+                        myTurn = true;
+                    }
+
+                    ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
+                } catch (NumberFormatException e) {
+                    System.out.println("Server sent invalid heal amount. Connection lost.");
+                    return false;
                 }
-
-                ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
                 return true;
 
             case ERROR :
