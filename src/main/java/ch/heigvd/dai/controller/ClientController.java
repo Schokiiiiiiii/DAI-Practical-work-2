@@ -32,7 +32,7 @@ public class ClientController extends Controller{
 
 
 
-    public int run(String host, int port){
+    public int run(String host, int port) {
         try {
             createNetwork(host, port);
         } catch (IOException e) {
@@ -52,7 +52,7 @@ public class ClientController extends Controller{
         }
 
         // Get server's response to username
-        if(!handleServerResponse()) {
+        if (!handleServerResponse()) {
             network.closeNetwork();
             return -1;
         }
@@ -63,10 +63,10 @@ public class ClientController extends Controller{
         inGame = true;
 
         // "Game"/Service loop
-        while(inGame){
-            if(myTurn){
+        while (inGame) {
+            if (myTurn) {
                 boolean inGameAction = true;
-                while(inGameAction) {
+                while (inGameAction) {
 
                     ui.showGameMenu();
                     String choice = ui.getUserInput("Choose an option");
@@ -92,24 +92,20 @@ public class ClientController extends Controller{
                     }
                 }
 
-                if(!inGame) {
+                if (!inGame) {
                     break;
                 }
 
                 // Response to our action
-                if(!handleServerResponse()){
-                    System.out.println("Server connection lost. Game ended.");
-                    inGame = false;
-                }
 
             } else {
                 // Wait for the other player's turn
                 ui.waitMessage(otherPlayerUsername);
 
-                if(!handleServerResponse()){
-                    System.out.println("Server connection lost. Game ended.");
-                    inGame = false;
-                }
+            }
+            if (!handleServerResponse()) {
+                System.out.println("Server connection lost. Game ended.");
+                inGame = false;
             }
         }
 

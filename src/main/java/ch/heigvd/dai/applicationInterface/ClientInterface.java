@@ -137,7 +137,7 @@ public class ClientInterface extends AnsiColors {
     }
 
     public void printWon(){
-        System.out.println(BRIGHT_GREEN_F + "=====================================");
+        System.out.println("\n" + BRIGHT_GREEN_F + "=====================================");
         System.out.println("   YOU WON!   ");
         System.out.println("=====================================" + RESET);
     }
