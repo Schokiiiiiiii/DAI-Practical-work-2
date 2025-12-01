@@ -15,8 +15,7 @@ Make that game.
 
 ## Application protocol
 
-Application protocol link: TBD
-
+Application protocol link: [here](docs/protocole.md)
 ## Commands
 
 ### How to launch the client/server application
