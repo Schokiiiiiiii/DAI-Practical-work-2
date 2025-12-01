@@ -1,0 +1,24 @@
+services:
+  server:
+    build: .
+    container_name: nokemon-server
+    ports:
+      - "7270:7270"          # optional: expose to host
+    networks:
+      - nokenet
+    command: ["server"]
+
+  client:
+    build: .
+    container_name: nokemon-client
+    depends_on:
+      - server
+    networks:
+      - nokenet
+    stdin_open: true
+    tty: true
+    command: ["client", "-H=server"]
+
+networks:
+  nokenet:
+    driver: bridge
