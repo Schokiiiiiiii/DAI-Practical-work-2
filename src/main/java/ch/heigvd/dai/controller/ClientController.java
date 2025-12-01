@@ -23,6 +23,24 @@ public class ClientController extends Controller{
     private int myHp;
     private int otherPlayerHp;
     private static final int MAX_HP = 80;
+    private static final int MAX_RESPONSE_PARTS = 5;  // STATS command has 5 parts: STATS player1 hp1 player2 hp2
+    private static final String CONNECTION_LOST_MSG = "Server connection lost. Game ended.";
+
+    /**
+     * Update my HP with bounds checking (0 to MAX_HP)
+     * @param delta the amount to change HP (negative for damage, positive for heal)
+     */
+    private void updateMyHp(int delta) {
+        myHp = Math.max(0, Math.min(myHp + delta, MAX_HP));
+    }
+
+    /**
+     * Update other player's HP with bounds checking (0 to MAX_HP)
+     * @param delta the amount to change HP (negative for damage, positive for heal)
+     */
+    private void updateOtherHp(int delta) {
+        otherPlayerHp = Math.max(0, Math.min(otherPlayerHp + delta, MAX_HP));
+    }
 
     private void createNetwork(String host, int port) throws IOException {
         this.network = new ClientNetwork(host, port);
@@ -46,7 +64,7 @@ public class ClientController extends Controller{
         try {
             network.send(translator.username(username));
         } catch (IOException e) {
-            System.out.println("Server connection lost. Game ended.");
+            System.out.println(CONNECTION_LOST_MSG);
             network.closeNetwork();
             return -1;
         }
@@ -86,7 +104,7 @@ public class ClientController extends Controller{
                                 break;
                         }
                     } catch (IOException e) {
-                        System.out.println("Server connection lost. Game ended.");
+                        System.out.println(CONNECTION_LOST_MSG);
                         inGame = false;
                         break;
                     }
@@ -104,7 +122,7 @@ public class ClientController extends Controller{
 
             }
             if (!handleServerResponse()) {
-                System.out.println("Server connection lost. Game ended.");
+                System.out.println(CONNECTION_LOST_MSG);
                 inGame = false;
             }
         }
@@ -166,12 +184,12 @@ public class ClientController extends Controller{
                     int damage = Integer.parseInt(parsedResponse[2]);
 
                     if(hitTarget.equals(username)){
-                        myHp -= damage;
+                        updateMyHp(-damage);
 
                         // We receive damage, so it's the other player who played last
                         myTurn = true;
                     } else {
-                        otherPlayerHp -= damage;
+                        updateOtherHp(-damage);
                         myTurn = false;
                     }
 
@@ -198,11 +216,10 @@ public class ClientController extends Controller{
                     int heal = Integer.parseInt(parsedResponse[2]);
 
                     if(username.equals(healer)){
-                        // Not allows exceeding max HP
-                        myHp = Math.min(myHp + heal, MAX_HP);
+                        updateMyHp(heal);
                         myTurn = false;
                     } else {
-                        otherPlayerHp = Math.min(otherPlayerHp + heal, MAX_HP);
+                        updateOtherHp(heal);
                         myTurn = true;
                     }
 
@@ -228,7 +245,7 @@ public class ClientController extends Controller{
 
     private String[] parseServerResponse(String rawServerResponse){
         // The biggest command is Stats with 5 arguments in total
-        return rawServerResponse.split(" ", 5);
+        return rawServerResponse.split(" ", MAX_RESPONSE_PARTS);
     }
 
     private int manageLobby(){
@@ -265,7 +282,7 @@ public class ClientController extends Controller{
                         System.out.println("Invalid option, try again.");
                 }
             } catch (IOException e) {
-                System.out.println("Server connection lost. Game ended.");
+                System.out.println(CONNECTION_LOST_MSG);
                 network.closeNetwork();
                 return -1;
             }

@@ -81,6 +81,14 @@ public class ServerController extends Controller implements Runnable{
         if (nokemon != null)
             nokemon.setHp(Math.min(nokemon.getHp() + heal, nokemon.getMaxHp()));
     }
+
+    /**
+     * Check if this player is currently in an active game
+     * @return true if player is player1 or player2 in the game
+     */
+    private boolean isInGame() {
+        return game.isPlayer1(this) || game.isPlayer2(this);
+    }
     // ***************
 
     // ***** RUN *****
@@ -194,7 +202,7 @@ public class ServerController extends Controller implements Runnable{
         synchronized(game) {
 
             // if choosing name or already in game
-            if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
+            if (username == null || isInGame()) {
                 ServerInterface.printError(id, ErrorCode.NOT_NOW);
                 return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
             // no player 1 (lobby not created)
@@ -224,7 +232,7 @@ public class ServerController extends Controller implements Runnable{
         synchronized(game) {
 
             // choosing his name or already in game
-            if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
+            if (username == null || isInGame()) {
                 ServerInterface.printError(id, ErrorCode.NOT_NOW);
                 return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
             // no player 1 (lobby not created)
@@ -330,12 +338,12 @@ public class ServerController extends Controller implements Runnable{
     /**
      * Handle a player quitting the game.
      * If in a running game, tell the opponent and make them the winner.
-     * @return string for the server's answe (OK or ERROR)
+     * @return string for the server's answer (OK or ERROR)
      */
     private String handleQuit() {
 
         // Current player in game then disconnect normally
-        if (game.isPlayer1(this) || game.isPlayer2(this)) {
+        if (isInGame()) {
             game.handlePlayerDisconnect(this);
         }
 
@@ -357,7 +365,7 @@ public class ServerController extends Controller implements Runnable{
         }
 
         // Player in an active game, tell the opponent
-        if (game.isPlayer1(this) || game.isPlayer2(this)) {
+        if (isInGame()) {
             game.handlePlayerDisconnect(this);
         }
 
