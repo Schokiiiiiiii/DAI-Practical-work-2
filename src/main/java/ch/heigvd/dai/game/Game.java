@@ -1,7 +1,7 @@
 package ch.heigvd.dai.game;
 
 import ch.heigvd.dai.controller.ServerController;
-import ch.heigvd.dai.nokenet.ServerAnswers;
+import ch.heigvd.dai.nokenet.ServerAnswer;
 
 public class Game {
 
@@ -90,7 +90,7 @@ public class Game {
         if (player1 == null || player2 == null)
             return;
 
-        String message = ServerAnswers.STATS + " "
+        String message = ServerAnswer.STATS + " "
                 + player1.getUsername() + " " + player1.getNokemonHp() + " "
                 + player2.getUsername() + " " + player2.getNokemonHp();
 
@@ -100,15 +100,71 @@ public class Game {
     // *******************
 
     // *** GAME METHODS **
-    public void endGame() {
+    /**
+     * Ends the current game by sending the LOST message to the two players,
+     * giving the win to the winner
+     * Game state is reset.
+     * Synchronized because game state is shared data
+     */
+    public synchronized void endGame() {
 
-        if (player1.getNokemonHp() == 0)
-            player1.addWin();
-        else if (player2.getNokemonHp() == 0)
-            player2.addWin();
+        // Determine who lost and send LOST message to both players
+        String loserUsername;
+        if (player1.getNokemonHp() == 0) {
+            loserUsername = player1.getUsername();
+        } else {
+            loserUsername = player2.getUsername();
+        }
 
+        // Send LOST message to both players
+        sendLostMessageToBothPlayers(loserUsername);
+
+        // Reset hps
         player1.setNokemonHp(player1.getNokemonMaxHp());
         player2.setNokemonHp(player2.getNokemonMaxHp());
+
+        // Clean game state
+        player1 = null;
+        player2 = null;
+        turn = null;
+    }
+
+    /**
+     * Sends LOST message to both players
+     * @param loserUsername the username of the player who lost
+     */
+    public void sendLostMessageToBothPlayers(String loserUsername) {
+
+        if (player1 == null || player2 == null)
+            return;
+
+        String message = ServerAnswer.LOST + " " + loserUsername;
+
+        player1.sendMessageFromGame(message);
+        player2.sendMessageFromGame(message);
+    }
+
+    /**
+     * Handles a player disconnecting during a game.
+     * Notifies the remaining player and make them win.
+     * @param disconnectedPlayer the player who disconnected
+     * synchronized because game state is shared data
+     */
+    public synchronized void handlePlayerDisconnect(ServerController disconnectedPlayer) {
+
+        // Check that the player who disconnects is actually in the game (could be a third player waiting in the lobby)
+        if (disconnectedPlayer != player1 && disconnectedPlayer != player2)
+            return;
+
+        ServerController remainingPlayer = getOtherPlayer(disconnectedPlayer);
+
+        // Send LOST message to the remaining player only
+        String message = ServerAnswer.LOST + " " + disconnectedPlayer.getUsername();
+        remainingPlayer.sendMessageFromGame(message);
+
+        remainingPlayer.setNokemonHp(remainingPlayer.getNokemonMaxHp());
+
+        // Clean game
         player1 = null;
         player2 = null;
         turn = null;

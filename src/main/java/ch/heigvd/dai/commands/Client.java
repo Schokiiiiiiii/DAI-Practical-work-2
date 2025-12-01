@@ -10,14 +10,14 @@ public class Client implements Callable<Integer> {
 
   @CommandLine.Option(
       names = {"-H", "--host"},
-      description = "Host to connect to.",
-      required = true)
+      description = "Host to connect to (default: ${DEFAULT-VALUE}).",
+      defaultValue = "localhost")
   protected String host;
 
   @CommandLine.Option(
       names = {"-p", "--port"},
       description = "Port to use (default: ${DEFAULT-VALUE}).",
-      defaultValue = "6433")
+      defaultValue = "7270")
   protected int port;
 
   @Override
@@ -27,6 +27,11 @@ public class Client implements Callable<Integer> {
 
       // define network
 
-      return clientController.run(host, port);
+      try {
+          return clientController.run(host, port);
+      } catch (Exception e) {
+          System.out.println("Cannot connect to server.");
+          return -1;
+      }
   }
 }

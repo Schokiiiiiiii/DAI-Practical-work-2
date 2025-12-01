@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 public class ServerNetwork {
 
     private final int PORT;
+    private static int nbThreads = 0;
 
     private static final char END_OF_FILE = '\n';
 
@@ -34,24 +35,47 @@ public class ServerNetwork {
              ExecutorService executor  = Executors.newVirtualThreadPerTaskExecutor()) {
 
             // server started...
-            System.out.println("[Server] started on port [" + PORT + "]");
+            System.out.println("[Server] Started on port " + PORT);
 
             // create sockets on arrival and launch a ServerController for it
             while (!serverSocket.isClosed()) {
+
+                // accept a new client
                 Socket clientSocket = serverSocket.accept();
+
+                // print log message
+                System.out.println("[Server] Accepted a new client");
+
+                // try to create a new thread
                 try {
                     executor.submit(new ServerController(clientSocket));
+                    ++nbThreads;
+
+                    // print log message
+                    System.out.println("[Server] Thread successfully launched");
+                    System.out.println("[Server] Current number of threads: " + nbThreads);
                 } catch (RuntimeException e) {
                     System.out.println("[Server] Error accepting client socket: " + e);
                 }
             }
 
         } catch (IOException e) {
-            System.out.println("[Server] Error while listening on port [" + PORT + "]: " + e);
+            System.out.println("[Server] Error while listening on port " + PORT + ": " + e);
             return -1;
         }
 
         return 0;
+    }
+
+    /**
+     * Decreases the counter of threads by 1
+     */
+    public static void decreaseNbThreads() {
+
+        if (nbThreads < 0)
+            throw new IllegalArgumentException("[Server] nbThreads can't be negative");
+
+        --nbThreads;
     }
 
     /**

@@ -7,16 +7,50 @@ package ch.heigvd.dai.nokenet;
 public class NokeNetTranslator {
 
     public String username(String username){
-        return CommandNames.USERNAME + username;
+        return CommandName.USERNAME + " " + username;
     }
 
-    public CommandNames username(){
-        return CommandNames.USERNAME;
+    public CommandName username(){
+        return CommandName.USERNAME;
     }
 
     public String ok(){
-        return "OK";
+        return ServerAnswer.OK.toString();
     }
 
-    // ...
+    public String create(){
+        return CommandName.CREATE.toString();
+    }
+
+    public String join(){
+        return CommandName.JOIN.toString();
+    }
+
+    public String quit(){
+        return CommandName.QUIT.toString();
+    }
+
+    public String attack(){
+        return CommandName.ATTACK.toString();
+    }
+
+    public String heal(){
+        return CommandName.HEAL.toString();
+    }
+
+    public ServerAnswer extractResponse(String[] response) {
+        if (response == null || response.length == 0) {
+            return null;
+        }
+
+        try {
+            return ServerAnswer.valueOf(response[0].toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // valueOf throws exception
+            return null;
+        }
+    }
+
+
+        // ...
 }

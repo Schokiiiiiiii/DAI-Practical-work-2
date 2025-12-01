@@ -3,9 +3,9 @@ package ch.heigvd.dai.controller;
 import ch.heigvd.dai.network.ServerNetwork;
 import ch.heigvd.dai.applicationInterface.ServerInterface;
 import ch.heigvd.dai.game.*;
-import ch.heigvd.dai.nokenet.CommandNames;
+import ch.heigvd.dai.nokenet.CommandName;
 import ch.heigvd.dai.nokenet.ErrorCode;
-import ch.heigvd.dai.nokenet.ServerAnswers;
+import ch.heigvd.dai.nokenet.ServerAnswer;
 
 import java.io.*;
 import java.net.Socket;
@@ -14,6 +14,11 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class ServerController extends Controller implements Runnable{
+
+    // ** CONTROLLER *
+    private final int id;
+    private static int nextId = 0;
+    // ***************
 
     // *** NETWORK ***
     private final Socket socket;
@@ -24,7 +29,6 @@ public class ServerController extends Controller implements Runnable{
     // **** USER *****
     private String username = null;
     private Nokemon nokemon = null;
-    private int wins        = 0;
     // ***************
 
     // *** SERVER ****
@@ -35,13 +39,14 @@ public class ServerController extends Controller implements Runnable{
 
     // * CONSTRUCTOR *
     public ServerController(Socket socket) {
+        this.id = nextId++;
         this.socket = socket;
         try {
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            System.out.println("[Controller] Error creating streams: " + e);
-            throw new RuntimeException("[Controller] Could not create the controller for the socket");
+            System.out.println("[Controller#" + id + "] Error creating streams: " + e);
+            throw new RuntimeException("[Controller#" + id + "] Could not create the controller for the socket");
         }
     }
     // ***************
@@ -56,7 +61,6 @@ public class ServerController extends Controller implements Runnable{
 
     // ***** SET *****
     public void setNokemonHp(int hp) { nokemon.setHp(hp); }
-    public void addWin() { ++wins; }
     // ***************
 
     // * NOKEMON SET *
@@ -77,6 +81,14 @@ public class ServerController extends Controller implements Runnable{
         if (nokemon != null)
             nokemon.setHp(Math.min(nokemon.getHp() + heal, nokemon.getMaxHp()));
     }
+
+    /**
+     * Check if this player is currently in an active game
+     * @return true if player is player1 or player2 in the game
+     */
+    private boolean isInGame() {
+        return game.isPlayer1(this) || game.isPlayer2(this);
+    }
     // ***************
 
     // ***** RUN *****
@@ -87,7 +99,7 @@ public class ServerController extends Controller implements Runnable{
     public void run(){
 
         // confirm controller is running
-        System.out.println("[Controller] connected to client");
+        System.out.println("[Controller#" + id + "] Connected to client");
 
         // try-with-resources
         try (socket;
@@ -100,9 +112,13 @@ public class ServerController extends Controller implements Runnable{
                 // read a message from the client
                 String[] message = ServerNetwork.receive(in, socket);
 
-                // if message is null, socket got closed
-                if (message == null)
-                    continue;
+                // if message is null, socket got close, meaning the client disconnected
+                if (message == null) {
+                    break;
+                }
+
+                // print log message
+                System.out.println("[Controller#" + id + "] Received a message from client");
 
                 // handle message
                 if (handleMessage(message) < 0) {
@@ -110,11 +126,12 @@ public class ServerController extends Controller implements Runnable{
                 }
             }
         } catch (IOException e) {
-            System.out.println("[Controller] Error reading/writing from socket: " + e);
+            System.out.println("[Controller#" + id + "] Error reading/writing from socket: " + e);
+        } finally {
+            // Cleanup even if exception occurs
+            handleDisconnect();
+            ServerNetwork.decreaseNbThreads();
         }
-
-        // remove the player at the end
-        players.remove(username);
     }
     // ***************
 
@@ -126,7 +143,7 @@ public class ServerController extends Controller implements Runnable{
     public int handleMessage(String[] message) {
 
         // try to read command from message
-        CommandNames command = ServerInterface.extractCommand(message);
+        CommandName command = ServerInterface.extractCommand(message);
 
         // switch over the possible commands
         String answer = switch (command) {
@@ -135,7 +152,11 @@ public class ServerController extends Controller implements Runnable{
             case JOIN       -> joinGame();
             case ATTACK     -> attack();
             case HEAL       -> heal();
-            default         -> ServerAnswers.ERROR + " " + ErrorCode.NOT_COMMAND.getCode();
+            case QUIT       -> handleQuit();
+            default         -> {
+                System.out.println("[Controller#" + id + "] Unknown command: " + command);
+                yield ServerAnswer.ERROR + " " + ErrorCode.NOT_COMMAND.getCode();
+            }
         };
 
         // send answer
@@ -152,17 +173,23 @@ public class ServerController extends Controller implements Runnable{
 
         // if already a username
         if (username != null) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            ServerInterface.printError(id, ErrorCode.NOT_NOW);
+            return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         // if username is already taken
         } else if (players.contains(name)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.USERNAME_TAKEN.getCode();
+            ServerInterface.printError(id, ErrorCode.USERNAME_TAKEN);
+            return ServerAnswer.ERROR + " " + ErrorCode.USERNAME_TAKEN.getCode();
         }
 
         // fix username and add player to the list
         this.username = name;
         players.add(name);
 
-        return ServerAnswers.OK.toString();
+        // print message log
+        System.out.println("[Controller#" + id + "] Player chose the username '" + username + "'");
+        ServerInterface.printPlayers(id, players);
+
+        return ServerAnswer.OK.toString();
     }
 
     /**
@@ -170,21 +197,29 @@ public class ServerController extends Controller implements Runnable{
      * @return string representing the answer
      * @implNote synchronized because game is shared data
      */
-    private synchronized String createGame() {
+    private String createGame() {
+        // Game object is shared
+        synchronized(game) {
 
-        // if choosing name or already in game
-        if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
-        // no player 1 (lobby not created)
-        } else if (!game.isPlayer1(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
+            // if choosing name or already in game
+            if (username == null || isInGame()) {
+                ServerInterface.printError(id, ErrorCode.NOT_NOW);
+                return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            // no player 1 (lobby not created)
+            } else if (!game.isPlayer1(null)) {
+                ServerInterface.printError(id, ErrorCode.EXISTING_LOBBY);
+                return ServerAnswer.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
+            }
+
+            // initialize nokemon and set first player
+            this.nokemon = new Nokemon();
+            game.setPlayer1(this);
+
+            // print message log
+            System.out.println("[Controller#" + id + "] Player 1 '" + username + "' created the game");
+
+            return ServerAnswer.OK.toString();
         }
-
-        // initialize nokemon and set first player
-        this.nokemon = new Nokemon();
-        game.setPlayer1(this);
-
-        return ServerAnswers.OK.toString();
     }
 
     /**
@@ -192,28 +227,38 @@ public class ServerController extends Controller implements Runnable{
      * @return string representing the answer
      * @implNote synchronized because game is shared data
      */
-    private synchronized String joinGame() {
+    private String joinGame() {
+        // Game object is shared
+        synchronized(game) {
 
-        // choosing his name or already in game
-        if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
-        // no player 1 (lobby not created)
-        } else if (game.isPlayer1(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
-        // already a player 2
-        } else if (!game.isPlayer2(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
+            // choosing his name or already in game
+            if (username == null || isInGame()) {
+                ServerInterface.printError(id, ErrorCode.NOT_NOW);
+                return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            // no player 1 (lobby not created)
+            } else if (game.isPlayer1(null)) {
+                ServerInterface.printError(id, ErrorCode.NO_LOBBY);
+                return ServerAnswer.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
+            // already a player 2
+            } else if (!game.isPlayer2(null)) {
+                ServerInterface.printError(id, ErrorCode.LOBBY_FULL);
+                return ServerAnswer.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
+            }
+
+            // initialize nokemon and set second player and turn
+            this.nokemon = new Nokemon();
+            game.setPlayer2(this);
+            game.setTurn(this);
+
+            // send stats to both players
+            game.sendStatsToBothPlayers();
+
+            // print message log
+            System.out.println("[Controller#" + id + "] Player 2 '" + username + "' joined the game");
+            System.out.println("[Controller#" + id + "] Game started");
+
+            return ServerAnswer.OK.toString();
         }
-
-        // initialize nokemon and set second player and turn
-        this.nokemon = new Nokemon();
-        game.setPlayer2(this);
-        game.setTurn(this);
-
-        // send stats to both players
-        game.sendStatsToBothPlayers();
-
-        return ServerAnswers.OK.toString();
     }
 
     /**
@@ -224,7 +269,8 @@ public class ServerController extends Controller implements Runnable{
 
         // if it's not our turn
         if (!game.hasTurn(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            ServerInterface.printError(id, ErrorCode.NOT_NOW);
+            return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         }
 
         // calculate random damage
@@ -234,9 +280,12 @@ public class ServerController extends Controller implements Runnable{
         game.attackOtherPlayer(this, damage);
 
         // build message
-        String message = ServerAnswers.HIT + " " +
+        String message = ServerAnswer.HIT + " " +
                 game.getOtherPlayerName(this) + " " +
                 damage;
+
+        // print message log
+        System.out.println("[Controller#" + id + "] Sent message '" + message + "' to both players");
 
         // send result of attack to other player
         game.sendToOtherPlayer(this, message);
@@ -257,7 +306,8 @@ public class ServerController extends Controller implements Runnable{
 
         // if it's not our turn
         if (!game.hasTurn(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            ServerInterface.printError(id, ErrorCode.NOT_NOW);
+            return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         }
 
         // calculate random heal
@@ -267,9 +317,12 @@ public class ServerController extends Controller implements Runnable{
         game.healThisPlayer(this, heal);
 
         // build message
-        String message = ServerAnswers.HEALED + " " +
+        String message = ServerAnswer.HEALED + " " +
                             username + " " +
                             heal;
+
+        // print message log
+        System.out.println("[Controller#" + id + "] Sent message '" + message + "' to both players");
 
         // send result of heal to other player
         game.sendToOtherPlayer(this, message);
@@ -280,6 +333,48 @@ public class ServerController extends Controller implements Runnable{
 
     public void sendMessageFromGame(String message) {
         ServerNetwork.send(out, message);
+    }
+
+    /**
+     * Handle a player quitting the game.
+     * If in a running game, tell the opponent and make them the winner.
+     * @return string for the server's answer (OK or ERROR)
+     */
+    private String handleQuit() {
+
+        // Current player in game then disconnect normally
+        if (isInGame()) {
+            game.handlePlayerDisconnect(this);
+        }
+
+        // Return OK to acknowledge the QUIT, then the connection will close
+        return ServerAnswer.OK.toString();
+    }
+
+    /**
+     * Handles a player disconnecting.
+     * If in a running game, tell the opponent and make them the winner.
+     * Removes the player from the list.
+     * synchronized because players list is shared
+     */
+    private synchronized void handleDisconnect() {
+
+        // Player finished registering
+        if (username == null) {
+            return;
+        }
+
+        // Player in an active game, tell the opponent
+        if (isInGame()) {
+            game.handlePlayerDisconnect(this);
+        }
+
+        // Remove the player from the players list
+        players.remove(username);
+
+        // print message log
+        System.out.println("[Controller#" + id + "] Player " + username + " disconnected");
+        ServerInterface.printPlayers(id, players);
     }
     // ***************
 }
