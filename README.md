@@ -2,6 +2,9 @@
 
 ## Table of contents
 - [Authors](#authors)
+- [Overview](#overview)
+- [Usage](#usage)
+- [Contribute](#contribute)
 
 ## Authors
 
