@@ -15,7 +15,7 @@ Make that game.
 
 ## Application protocol
 
-Application protocol link: [here](docs/protocole.md)
+Application protocol link: [here](docs/application-protocole.md)
 ## Commands
 
 ### How to launch the client/server application
