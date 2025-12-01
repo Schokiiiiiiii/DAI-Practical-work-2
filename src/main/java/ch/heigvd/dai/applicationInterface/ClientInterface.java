@@ -11,10 +11,12 @@ public class ClientInterface extends AnsiColors {
     private Controller controller;
     private NokeNetTranslator translator;
     private String myUsername;
+    private final Scanner scanner;
 
     public ClientInterface() {
         controller = new ClientController();
         translator = new NokeNetTranslator();
+        scanner = new Scanner(System.in);
     }
 
     public void setMyUsername(String username) {
@@ -23,7 +25,6 @@ public class ClientInterface extends AnsiColors {
 
     public String getUserInput(String inputMessage) {
         System.out.print(inputMessage + " > ");
-        Scanner scanner = new Scanner(System.in);
         return scanner.nextLine();
     }
 
