@@ -173,21 +173,24 @@ public class ServerController extends Controller implements Runnable{
      * @return string representing the answer
      * @implNote synchronized because game is shared data
      */
-    private synchronized String createGame() {
+    private String createGame() {
+        // Game object is shared
+        synchronized(game) {
 
-        // if choosing name or already in game
-        if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
-        // no player 1 (lobby not created)
-        } else if (!game.isPlayer1(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
+            // if choosing name or already in game
+            if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
+                return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            // no player 1 (lobby not created)
+            } else if (!game.isPlayer1(null)) {
+                return ServerAnswers.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
+            }
+
+            // initialize nokemon and set first player
+            this.nokemon = new Nokemon();
+            game.setPlayer1(this);
+
+            return ServerAnswers.OK.toString();
         }
-
-        // initialize nokemon and set first player
-        this.nokemon = new Nokemon();
-        game.setPlayer1(this);
-
-        return ServerAnswers.OK.toString();
     }
 
     /**
@@ -195,28 +198,31 @@ public class ServerController extends Controller implements Runnable{
      * @return string representing the answer
      * @implNote synchronized because game is shared data
      */
-    private synchronized String joinGame() {
+    private String joinGame() {
+        // Game object is shared
+        synchronized(game) {
 
-        // choosing his name or already in game
-        if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
-        // no player 1 (lobby not created)
-        } else if (game.isPlayer1(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
-        // already a player 2
-        } else if (!game.isPlayer2(null)) {
-            return ServerAnswers.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
+            // choosing his name or already in game
+            if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
+                return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            // no player 1 (lobby not created)
+            } else if (game.isPlayer1(null)) {
+                return ServerAnswers.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
+            // already a player 2
+            } else if (!game.isPlayer2(null)) {
+                return ServerAnswers.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
+            }
+
+            // initialize nokemon and set second player and turn
+            this.nokemon = new Nokemon();
+            game.setPlayer2(this);
+            game.setTurn(this);
+
+            // send stats to both players
+            game.sendStatsToBothPlayers();
+
+            return ServerAnswers.OK.toString();
         }
-
-        // initialize nokemon and set second player and turn
-        this.nokemon = new Nokemon();
-        game.setPlayer2(this);
-        game.setTurn(this);
-
-        // send stats to both players
-        game.sendStatsToBothPlayers();
-
-        return ServerAnswers.OK.toString();
     }
 
     /**
