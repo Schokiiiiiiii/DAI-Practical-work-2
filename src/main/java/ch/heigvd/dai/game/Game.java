@@ -112,10 +112,8 @@ public class Game {
         String loserUsername;
         if (player1.getNokemonHp() == 0) {
             loserUsername = player1.getUsername();
-            player2.addWin();
         } else {
             loserUsername = player2.getUsername();
-            player1.addWin();
         }
 
         // Send LOST message to both players
@@ -163,8 +161,6 @@ public class Game {
         // Send LOST message to the remaining player only
         String message = ServerAnswers.LOST + " " + disconnectedPlayer.getUsername();
         remainingPlayer.sendMessageFromGame(message);
-
-        remainingPlayer.addWin();
 
         remainingPlayer.setNokemonHp(remainingPlayer.getNokemonMaxHp());
 

@@ -15,6 +15,11 @@ import java.util.Random;
 
 public class ServerController extends Controller implements Runnable{
 
+    // ** CONTROLLER *
+    private final int id;
+    private static int nextId = 0;
+    // ***************
+
     // *** NETWORK ***
     private final Socket socket;
     private final BufferedReader in;
@@ -24,7 +29,6 @@ public class ServerController extends Controller implements Runnable{
     // **** USER *****
     private String username = null;
     private Nokemon nokemon = null;
-    private int wins        = 0;
     // ***************
 
     // *** SERVER ****
@@ -35,13 +39,14 @@ public class ServerController extends Controller implements Runnable{
 
     // * CONSTRUCTOR *
     public ServerController(Socket socket) {
+        this.id = nextId++;
         this.socket = socket;
         try {
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            System.out.println("[Controller] Error creating streams: " + e);
-            throw new RuntimeException("[Controller] Could not create the controller for the socket");
+            System.out.println("[Controller#" + id + "] Error creating streams: " + e);
+            throw new RuntimeException("[Controller#" + id + "] Could not create the controller for the socket");
         }
     }
     // ***************
@@ -56,7 +61,6 @@ public class ServerController extends Controller implements Runnable{
 
     // ***** SET *****
     public void setNokemonHp(int hp) { nokemon.setHp(hp); }
-    public void addWin() { ++wins; }
     // ***************
 
     // * NOKEMON SET *
@@ -87,7 +91,7 @@ public class ServerController extends Controller implements Runnable{
     public void run(){
 
         // confirm controller is running
-        System.out.println("[Controller] connected to client");
+        System.out.println("[Controller#" + id + "] Connected to client");
 
         // try-with-resources
         try (socket;
@@ -102,9 +106,11 @@ public class ServerController extends Controller implements Runnable{
 
                 // if message is null, socket got close, meaning the client disconnected
                 if (message == null) {
-                    handleDisconnect();
                     break;
                 }
+
+                // print log message
+                System.out.println("[Controller#" + id + "] Received a message from client");
 
                 // handle message
                 if (handleMessage(message) < 0) {
@@ -112,10 +118,11 @@ public class ServerController extends Controller implements Runnable{
                 }
             }
         } catch (IOException e) {
-            System.out.println("[Controller] Error reading/writing from socket: " + e);
+            System.out.println("[Controller#" + id + "] Error reading/writing from socket: " + e);
         } finally {
             // Cleanup even if exception occurs
             handleDisconnect();
+            ServerNetwork.decreaseNbThreads();
         }
     }
     // ***************
@@ -138,7 +145,10 @@ public class ServerController extends Controller implements Runnable{
             case ATTACK     -> attack();
             case HEAL       -> heal();
             case QUIT       -> handleQuit();
-            default         -> ServerAnswers.ERROR + " " + ErrorCode.NOT_COMMAND.getCode();
+            default         -> {
+                System.out.println("[Controller#" + id + "] Unknown command: " + command);
+                yield ServerAnswers.ERROR + " " + ErrorCode.NOT_COMMAND.getCode();
+            }
         };
 
         // send answer
@@ -155,15 +165,21 @@ public class ServerController extends Controller implements Runnable{
 
         // if already a username
         if (username != null) {
+            ServerInterface.printError(id, ErrorCode.NOT_NOW);
             return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         // if username is already taken
         } else if (players.contains(name)) {
+            ServerInterface.printError(id, ErrorCode.USERNAME_TAKEN);
             return ServerAnswers.ERROR + " " + ErrorCode.USERNAME_TAKEN.getCode();
         }
 
         // fix username and add player to the list
         this.username = name;
         players.add(name);
+
+        // print message log
+        System.out.println("[Controller#" + id + "] Player chose the username '" + username + "'");
+        ServerInterface.printPlayers(id, players);
 
         return ServerAnswers.OK.toString();
     }
@@ -179,15 +195,20 @@ public class ServerController extends Controller implements Runnable{
 
             // if choosing name or already in game
             if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
+                ServerInterface.printError(id, ErrorCode.NOT_NOW);
                 return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
             // no player 1 (lobby not created)
             } else if (!game.isPlayer1(null)) {
+                ServerInterface.printError(id, ErrorCode.EXISTING_LOBBY);
                 return ServerAnswers.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
             }
 
             // initialize nokemon and set first player
             this.nokemon = new Nokemon();
             game.setPlayer1(this);
+
+            // print message log
+            System.out.println("[Controller#" + id + "] Player 1 '" + username + "' created the game");
 
             return ServerAnswers.OK.toString();
         }
@@ -204,12 +225,15 @@ public class ServerController extends Controller implements Runnable{
 
             // choosing his name or already in game
             if (username == null || game.isPlayer1(this) || game.isPlayer2(this)) {
+                ServerInterface.printError(id, ErrorCode.NOT_NOW);
                 return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
             // no player 1 (lobby not created)
             } else if (game.isPlayer1(null)) {
+                ServerInterface.printError(id, ErrorCode.NO_LOBBY);
                 return ServerAnswers.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
             // already a player 2
             } else if (!game.isPlayer2(null)) {
+                ServerInterface.printError(id, ErrorCode.LOBBY_FULL);
                 return ServerAnswers.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
             }
 
@@ -220,6 +244,10 @@ public class ServerController extends Controller implements Runnable{
 
             // send stats to both players
             game.sendStatsToBothPlayers();
+
+            // print message log
+            System.out.println("[Controller#" + id + "] Player 2 '" + username + "' joined the game");
+            System.out.println("[Controller#" + id + "] Game started");
 
             return ServerAnswers.OK.toString();
         }
@@ -233,6 +261,7 @@ public class ServerController extends Controller implements Runnable{
 
         // if it's not our turn
         if (!game.hasTurn(this)) {
+            ServerInterface.printError(id, ErrorCode.NOT_NOW);
             return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         }
 
@@ -246,6 +275,9 @@ public class ServerController extends Controller implements Runnable{
         String message = ServerAnswers.HIT + " " +
                 game.getOtherPlayerName(this) + " " +
                 damage;
+
+        // print message log
+        System.out.println("[Controller#" + id + "] Sent message '" + message + "' to both players");
 
         // send result of attack to other player
         game.sendToOtherPlayer(this, message);
@@ -266,6 +298,7 @@ public class ServerController extends Controller implements Runnable{
 
         // if it's not our turn
         if (!game.hasTurn(this)) {
+            ServerInterface.printError(id, ErrorCode.NOT_NOW);
             return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         }
 
@@ -279,6 +312,9 @@ public class ServerController extends Controller implements Runnable{
         String message = ServerAnswers.HEALED + " " +
                             username + " " +
                             heal;
+
+        // print message log
+        System.out.println("[Controller#" + id + "] Sent message '" + message + "' to both players");
 
         // send result of heal to other player
         game.sendToOtherPlayer(this, message);
@@ -297,10 +333,12 @@ public class ServerController extends Controller implements Runnable{
      * @return string for the server's answe (OK or ERROR)
      */
     private String handleQuit() {
+
         // Current player in game then disconnect normally
         if (game.isPlayer1(this) || game.isPlayer2(this)) {
             game.handlePlayerDisconnect(this);
         }
+
         // Return OK to acknowledge the QUIT, then the connection will close
         return ServerAnswers.OK.toString();
     }
@@ -312,6 +350,7 @@ public class ServerController extends Controller implements Runnable{
      * synchronized because players list is shared
      */
     private synchronized void handleDisconnect() {
+
         // Player finished registering
         if (username == null) {
             return;
@@ -325,8 +364,9 @@ public class ServerController extends Controller implements Runnable{
         // Remove the player from the players list
         players.remove(username);
 
-        // Might be removed or moved in ServerInterface.java
-        System.out.println("[Server log -Controller-] Player " + username + " disconnected");
+        // print message log
+        System.out.println("[Controller#" + id + "] Player " + username + " disconnected");
+        ServerInterface.printPlayers(id, players);
     }
     // ***************
 }
