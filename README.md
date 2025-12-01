@@ -8,7 +8,9 @@
 /_/ |_/\____/_/|_|\___/_/ /_/ /_/\____/_/ /_/
 
 ```
-                                              
+![img_1.png](docs/img_1.png)
+![img_2.png](docs/img_2.png)
+![img_3.png](docs/img_3.png)
 
 ## Table of contents
 - [Authors](#authors)
@@ -72,6 +74,38 @@ Specify host and port
 
 ```Bash
 java -jar target/java-tcp-programming-1.0-SNAPSHOT.jar client -H=<host> -p=<port>
+```
+
+##### Example
+
+```
+Enter your username > P2
+
+=== Lobby Menu ===
+1. CREATE - Create a new game
+2. JOIN - Join existing game
+3. QUIT - Exit
+Choose an option > brrrrrrrrr
+Invalid option, try again.
+
+=== Lobby Menu ===                                                                       
+1. CREATE - Create a new game
+2. JOIN - Join existing game
+3. QUIT - Exit
+Choose an option > 2    
+
+Joining game...
+
+====Current Game Status====
+P2 (You): 80 HP
+P1: 80 HP
+===========================
+
+    Your Turn    
+1. ATTACK - Attack opponent
+2. HEAL - Heal your Nokemon
+Choose an option > 1
+...             
 ```
 
 ## Docker version
