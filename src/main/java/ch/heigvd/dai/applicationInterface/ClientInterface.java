@@ -66,19 +66,6 @@ public class ClientInterface extends AnsiColors {
                     }
                 }
                 break;
-           /* case STATS:
-                // STATICS <player1> <hp1> <player2> <hp2>
-                String player1 = commandArgs[1];
-                int hp1 = Integer.parseInt(commandArgs[2]);
-                String player2 = commandArgs[3];
-                int hp2 = Integer.parseInt(commandArgs[4]);
-
-                // Diplay game upadte in a little box for better readability in high-tension games.
-                System.out.println("====PLAYER STATS====");
-                System.out.println(player1 + " : " + hp1 + " HP");
-                System.out.println(player2 + " : " + hp2 + " HP");
-                System.out.println("====================");
-                break;*/
         }
     }
 
