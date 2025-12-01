@@ -7,44 +7,44 @@ package ch.heigvd.dai.nokenet;
 public class NokeNetTranslator {
 
     public String username(String username){
-        return CommandNames.USERNAME + " " + username;
+        return CommandName.USERNAME + " " + username;
     }
 
-    public CommandNames username(){
-        return CommandNames.USERNAME;
+    public CommandName username(){
+        return CommandName.USERNAME;
     }
 
     public String ok(){
-        return ServerAnswers.OK.toString();
+        return ServerAnswer.OK.toString();
     }
 
     public String create(){
-        return CommandNames.CREATE.toString();
+        return CommandName.CREATE.toString();
     }
 
     public String join(){
-        return CommandNames.JOIN.toString();
+        return CommandName.JOIN.toString();
     }
 
     public String quit(){
-        return CommandNames.QUIT.toString();
+        return CommandName.QUIT.toString();
     }
 
     public String attack(){
-        return CommandNames.ATTACK.toString();
+        return CommandName.ATTACK.toString();
     }
 
     public String heal(){
-        return CommandNames.HEAL.toString();
+        return CommandName.HEAL.toString();
     }
 
-    public ServerAnswers extractResponse(String[] response) {
+    public ServerAnswer extractResponse(String[] response) {
         if (response == null || response.length == 0) {
             return null;
         }
 
         try {
-            return ServerAnswers.valueOf(response[0].toUpperCase());
+            return ServerAnswer.valueOf(response[0].toUpperCase());
         } catch (IllegalArgumentException e) {
             // valueOf throws exception
             return null;

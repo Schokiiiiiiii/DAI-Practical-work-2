@@ -3,10 +3,9 @@ package ch.heigvd.dai.controller;
 import ch.heigvd.dai.network.ClientNetwork;
 import ch.heigvd.dai.applicationInterface.ClientInterface;
 
-import ch.heigvd.dai.game.*;
-import ch.heigvd.dai.nokenet.CommandNames;
+import ch.heigvd.dai.nokenet.CommandName;
 import ch.heigvd.dai.nokenet.NokeNetTranslator;
-import ch.heigvd.dai.nokenet.ServerAnswers;
+import ch.heigvd.dai.nokenet.ServerAnswer;
 
 import java.io.IOException;
 
@@ -146,7 +145,7 @@ public class ClientController extends Controller{
         }
 
         String[] parsedResponse = parseServerResponse(rawServerResponse);
-        ServerAnswers responseType = translator.extractResponse(parsedResponse);
+        ServerAnswer responseType = translator.extractResponse(parsedResponse);
 
         ui.displayServerAnswer(responseType, parsedResponse);
 
@@ -257,7 +256,7 @@ public class ClientController extends Controller{
             try {
                 switch (choice){
                     case "1" :
-                        network.send(CommandNames.CREATE.toString());
+                        network.send(CommandName.CREATE.toString());
                         // Handle server response
                         if(handleServerResponse()){
                             System.out.println("Waiting for another player to join the game...");
@@ -265,7 +264,7 @@ public class ClientController extends Controller{
                         }
                         break;
                     case "2" :
-                        network.send(CommandNames.JOIN.toString());
+                        network.send(CommandName.JOIN.toString());
                         // Server sends STATS first
                         System.out.println("\nJoining game...");
                         if(handleServerResponse()){
@@ -275,7 +274,7 @@ public class ClientController extends Controller{
                         }
                         break;
                     case "3" :
-                        network.send(CommandNames.QUIT.toString());
+                        network.send(CommandName.QUIT.toString());
                         network.closeNetwork();
                         return 1;
                     default:

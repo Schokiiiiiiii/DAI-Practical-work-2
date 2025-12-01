@@ -2,7 +2,7 @@ package ch.heigvd.dai.applicationInterface;
 
 import ch.heigvd.dai.controller.*;
 import ch.heigvd.dai.nokenet.NokeNetTranslator;
-import ch.heigvd.dai.nokenet.ServerAnswers;
+import ch.heigvd.dai.nokenet.ServerAnswer;
 
 import java.util.Scanner;
 
@@ -32,7 +32,7 @@ public class ClientInterface extends AnsiColors {
         return getUserInput( BOLD + "Enter your username" + RESET);
     }
 
-    public void displayServerAnswer(ServerAnswers command, String[] commandArgs){
+    public void displayServerAnswer(ServerAnswer command, String[] commandArgs){
         switch(command){
             case ERROR:
                 // The protocole always defines the error code as the second argument

@@ -1,18 +1,18 @@
 package ch.heigvd.dai.applicationInterface;
 
-import ch.heigvd.dai.nokenet.CommandNames;
+import ch.heigvd.dai.nokenet.CommandName;
 import ch.heigvd.dai.nokenet.ErrorCode;
 
 import java.util.ArrayList;
 
 public class ServerInterface {
 
-    public static CommandNames extractCommand(String[] message) {
+    public static CommandName extractCommand(String[] message) {
 
         // try to get the command
-        CommandNames command = null;
+        CommandName command = null;
         try {
-            command = CommandNames.valueOf(message[0].toUpperCase());
+            command = CommandName.valueOf(message[0].toUpperCase());
         } catch (IllegalArgumentException e) {
             // command is null and will be handled by switch
         }

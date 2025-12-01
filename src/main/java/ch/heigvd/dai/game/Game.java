@@ -1,7 +1,7 @@
 package ch.heigvd.dai.game;
 
 import ch.heigvd.dai.controller.ServerController;
-import ch.heigvd.dai.nokenet.ServerAnswers;
+import ch.heigvd.dai.nokenet.ServerAnswer;
 
 public class Game {
 
@@ -90,7 +90,7 @@ public class Game {
         if (player1 == null || player2 == null)
             return;
 
-        String message = ServerAnswers.STATS + " "
+        String message = ServerAnswer.STATS + " "
                 + player1.getUsername() + " " + player1.getNokemonHp() + " "
                 + player2.getUsername() + " " + player2.getNokemonHp();
 
@@ -138,7 +138,7 @@ public class Game {
         if (player1 == null || player2 == null)
             return;
 
-        String message = ServerAnswers.LOST + " " + loserUsername;
+        String message = ServerAnswer.LOST + " " + loserUsername;
 
         player1.sendMessageFromGame(message);
         player2.sendMessageFromGame(message);
@@ -159,7 +159,7 @@ public class Game {
         ServerController remainingPlayer = getOtherPlayer(disconnectedPlayer);
 
         // Send LOST message to the remaining player only
-        String message = ServerAnswers.LOST + " " + disconnectedPlayer.getUsername();
+        String message = ServerAnswer.LOST + " " + disconnectedPlayer.getUsername();
         remainingPlayer.sendMessageFromGame(message);
 
         remainingPlayer.setNokemonHp(remainingPlayer.getNokemonMaxHp());

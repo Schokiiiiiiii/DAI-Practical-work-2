@@ -3,9 +3,9 @@ package ch.heigvd.dai.controller;
 import ch.heigvd.dai.network.ServerNetwork;
 import ch.heigvd.dai.applicationInterface.ServerInterface;
 import ch.heigvd.dai.game.*;
-import ch.heigvd.dai.nokenet.CommandNames;
+import ch.heigvd.dai.nokenet.CommandName;
 import ch.heigvd.dai.nokenet.ErrorCode;
-import ch.heigvd.dai.nokenet.ServerAnswers;
+import ch.heigvd.dai.nokenet.ServerAnswer;
 
 import java.io.*;
 import java.net.Socket;
@@ -143,7 +143,7 @@ public class ServerController extends Controller implements Runnable{
     public int handleMessage(String[] message) {
 
         // try to read command from message
-        CommandNames command = ServerInterface.extractCommand(message);
+        CommandName command = ServerInterface.extractCommand(message);
 
         // switch over the possible commands
         String answer = switch (command) {
@@ -155,7 +155,7 @@ public class ServerController extends Controller implements Runnable{
             case QUIT       -> handleQuit();
             default         -> {
                 System.out.println("[Controller#" + id + "] Unknown command: " + command);
-                yield ServerAnswers.ERROR + " " + ErrorCode.NOT_COMMAND.getCode();
+                yield ServerAnswer.ERROR + " " + ErrorCode.NOT_COMMAND.getCode();
             }
         };
 
@@ -174,11 +174,11 @@ public class ServerController extends Controller implements Runnable{
         // if already a username
         if (username != null) {
             ServerInterface.printError(id, ErrorCode.NOT_NOW);
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         // if username is already taken
         } else if (players.contains(name)) {
             ServerInterface.printError(id, ErrorCode.USERNAME_TAKEN);
-            return ServerAnswers.ERROR + " " + ErrorCode.USERNAME_TAKEN.getCode();
+            return ServerAnswer.ERROR + " " + ErrorCode.USERNAME_TAKEN.getCode();
         }
 
         // fix username and add player to the list
@@ -189,7 +189,7 @@ public class ServerController extends Controller implements Runnable{
         System.out.println("[Controller#" + id + "] Player chose the username '" + username + "'");
         ServerInterface.printPlayers(id, players);
 
-        return ServerAnswers.OK.toString();
+        return ServerAnswer.OK.toString();
     }
 
     /**
@@ -204,11 +204,11 @@ public class ServerController extends Controller implements Runnable{
             // if choosing name or already in game
             if (username == null || isInGame()) {
                 ServerInterface.printError(id, ErrorCode.NOT_NOW);
-                return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+                return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
             // no player 1 (lobby not created)
             } else if (!game.isPlayer1(null)) {
                 ServerInterface.printError(id, ErrorCode.EXISTING_LOBBY);
-                return ServerAnswers.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
+                return ServerAnswer.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
             }
 
             // initialize nokemon and set first player
@@ -218,7 +218,7 @@ public class ServerController extends Controller implements Runnable{
             // print message log
             System.out.println("[Controller#" + id + "] Player 1 '" + username + "' created the game");
 
-            return ServerAnswers.OK.toString();
+            return ServerAnswer.OK.toString();
         }
     }
 
@@ -234,15 +234,15 @@ public class ServerController extends Controller implements Runnable{
             // choosing his name or already in game
             if (username == null || isInGame()) {
                 ServerInterface.printError(id, ErrorCode.NOT_NOW);
-                return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+                return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
             // no player 1 (lobby not created)
             } else if (game.isPlayer1(null)) {
                 ServerInterface.printError(id, ErrorCode.NO_LOBBY);
-                return ServerAnswers.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
+                return ServerAnswer.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
             // already a player 2
             } else if (!game.isPlayer2(null)) {
                 ServerInterface.printError(id, ErrorCode.LOBBY_FULL);
-                return ServerAnswers.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
+                return ServerAnswer.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
             }
 
             // initialize nokemon and set second player and turn
@@ -257,7 +257,7 @@ public class ServerController extends Controller implements Runnable{
             System.out.println("[Controller#" + id + "] Player 2 '" + username + "' joined the game");
             System.out.println("[Controller#" + id + "] Game started");
 
-            return ServerAnswers.OK.toString();
+            return ServerAnswer.OK.toString();
         }
     }
 
@@ -270,7 +270,7 @@ public class ServerController extends Controller implements Runnable{
         // if it's not our turn
         if (!game.hasTurn(this)) {
             ServerInterface.printError(id, ErrorCode.NOT_NOW);
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         }
 
         // calculate random damage
@@ -280,7 +280,7 @@ public class ServerController extends Controller implements Runnable{
         game.attackOtherPlayer(this, damage);
 
         // build message
-        String message = ServerAnswers.HIT + " " +
+        String message = ServerAnswer.HIT + " " +
                 game.getOtherPlayerName(this) + " " +
                 damage;
 
@@ -307,7 +307,7 @@ public class ServerController extends Controller implements Runnable{
         // if it's not our turn
         if (!game.hasTurn(this)) {
             ServerInterface.printError(id, ErrorCode.NOT_NOW);
-            return ServerAnswers.ERROR + " " + ErrorCode.NOT_NOW.getCode();
+            return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
         }
 
         // calculate random heal
@@ -317,7 +317,7 @@ public class ServerController extends Controller implements Runnable{
         game.healThisPlayer(this, heal);
 
         // build message
-        String message = ServerAnswers.HEALED + " " +
+        String message = ServerAnswer.HEALED + " " +
                             username + " " +
                             heal;
 
@@ -348,7 +348,7 @@ public class ServerController extends Controller implements Runnable{
         }
 
         // Return OK to acknowledge the QUIT, then the connection will close
-        return ServerAnswers.OK.toString();
+        return ServerAnswer.OK.toString();
     }
 
     /**
