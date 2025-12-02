@@ -142,9 +142,20 @@ Choose an option > 1
 
 ### Run our application in a docker container
 
+Remember to log in to GHCR
+```bash
+echo YOUR_GITHUB_PAT | docker login ghcr.io -u YOUR_USERNAME --password-stdin
+```
+More about Github Personal Token [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
+
 Create a docker network
 ```Bash
 docker network create nokemon-net
+```
+
+Pull docker image
+```Bash
+docker pull ghcr.io/schokiiiiiiii/dai-practical-work-2:nokemon-latest
 ```
 
 Run server
