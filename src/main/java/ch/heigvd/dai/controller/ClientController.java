@@ -49,7 +49,7 @@ public class ClientController {
 
 
 
-    public int run(String host, int port) {
+    public int run(String host, int port) throws IOException {
         try {
             createNetwork(host, port);
         } catch (IOException e) {
@@ -74,60 +74,75 @@ public class ClientController {
             return -1;
         }
 
-        // Start a lobby loop
-        manageLobby();
+        while(true){
 
-        inGame = true;
+            // Start a lobby loop
+            manageLobby();
 
-        // "Game"/Service loop
-        while (inGame) {
-            if (myTurn) {
-                boolean inGameAction = true;
-                while (inGameAction) {
+            if(!network.isConnected()){
+                return 0;
+            }
 
-                    ui.showGameMenu();
-                    String choice = ui.getUserInput("Choose an option");
+            inGame = true;
 
-                    try {
-                        switch (choice) {
-                            case "1":
-                                network.send(CommandName.ATTACK.toString());
-                                inGameAction = false;
-                                break;
-                            case "2":
-                                network.send(CommandName.HEAL.toString());
-                                inGameAction = false;
-                                break;
-                            default:
-                                System.out.println("Invalid option, try again.");
-                                break;
+            // "Game"/Service loop
+            while (inGame) {
+                if (myTurn) {
+                    boolean inGameAction = true;
+                    while (inGameAction) {
+
+                        ui.showGameMenu();
+                        String choice = ui.getUserInput("Choose an option");
+
+                        try {
+                            switch (choice) {
+                                case "1":
+                                    network.send(CommandName.ATTACK.toString());
+                                    inGameAction = false;
+                                    break;
+                                case "2":
+                                    network.send(CommandName.HEAL.toString());
+                                    inGameAction = false;
+                                    break;
+                                default:
+                                    System.out.println("Invalid option, try again.");
+                                    break;
+                            }
+                        } catch (IOException e) {
+                            System.out.println(CONNECTION_LOST_MSG);
+                            inGame = false;
+                            break;
                         }
-                    } catch (IOException e) {
-                        System.out.println(CONNECTION_LOST_MSG);
-                        inGame = false;
+                    }
+
+                    if (!inGame) {
                         break;
                     }
+
+                    // Response to our action
+
+                } else {
+                    // Wait for the other player's turn
+                    ui.waitMessage(otherPlayerUsername);
+
                 }
-
-                if (!inGame) {
-                    break;
+                if (!handleServerResponse()) {
+                    System.out.println(CONNECTION_LOST_MSG);
+                    inGame = false;
                 }
-
-                // Response to our action
-
-            } else {
-                // Wait for the other player's turn
-                ui.waitMessage(otherPlayerUsername);
-
             }
-            if (!handleServerResponse()) {
-                System.out.println(CONNECTION_LOST_MSG);
-                inGame = false;
+            inGame = false;
+
+            // Reset game stats
+            myHp = 0;
+            otherPlayerHp = 0;
+            otherPlayerUsername = null;
+            myTurn = false;
+
+            while(network.hasDataAvailable()){
+                network.receive();
             }
         }
-
-        network.closeNetwork();
-        return 0;
     }
 
     private boolean handleServerResponse(){
@@ -185,23 +200,18 @@ public class ClientController {
                     if (hitTarget.equals(username)) {
                         updateMyHp(-damage);
 
-                        // We receive damage, so it's the other player who played last
-                        myTurn = true;
+                        // We received damage, so the other player just played
+                        // If still alive, we can play. If dead, wait for LOST message
+                        myTurn = myHp > 0;
                     } else {
                         updateOtherHp(-damage);
+
+                        // Opponent received damage, meaning we just played
                         myTurn = false;
                     }
 
                     ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
-
-                    // Check for the game end
-                    if (myHp <= 0) {
-                        ui.printLost();
-                        inGame = false;
-                    } else if (otherPlayerHp <= 0) {
-                        ui.printWon();
-                        inGame = false;
-                    }
+                    
                 } catch (NumberFormatException e) {
                     System.out.println("Server sent invalid damage value. Connection lost.");
                     yield false;

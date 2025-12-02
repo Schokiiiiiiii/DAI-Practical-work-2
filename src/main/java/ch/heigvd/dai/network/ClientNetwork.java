@@ -42,6 +42,10 @@ public class ClientNetwork {
         out.flush();
     }
 
+    public boolean hasDataAvailable() throws IOException {
+        return in.ready();
+    }
+
     public String receive() throws IOException {
         if (!isConnected()) {
             throw new IOException("Not connected to server");
