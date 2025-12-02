@@ -156,6 +156,19 @@ public class Game {
         if (disconnectedPlayer != player1 && disconnectedPlayer != player2)
             return;
 
+        // Handle the case where only one player is in the game (player created game but no one joined yet)
+        boolean onlyPlayerOne = (player1 != null && player2 == null);
+        boolean onlyPlayerTwo = (player1 == null && player2 != null);
+
+        if (onlyPlayerOne || onlyPlayerTwo) {
+            // Clean up the game state
+            player1 = null;
+            player2 = null;
+            turn = null;
+            return;
+        }
+
+        // Both players are in the game
         ServerController remainingPlayer = getOtherPlayer(disconnectedPlayer);
 
         // Send LOST message to the remaining player only
