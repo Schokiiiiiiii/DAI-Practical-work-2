@@ -229,7 +229,7 @@ We think this is the most efficient way to handle multiple connections and socke
 
 ### Diagram of the project
 
-![Project diagram](docs/project-diagram.svg)
+![Project diagram](docs/uml.svg)
 
 ### Limitations
 
