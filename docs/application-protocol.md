@@ -197,30 +197,30 @@ HEAL
 
 ### Functional example
 
-![alt text](functional_example.png)
+![alt text](images/functional_example.png)
 
 ### Connexion lost during game
 
-![alt text](connection_lost_during_game_example.png)
+![alt text](images/connection_lost_during_game_example.png)
 
 ### Error when creating a game
 
-![alt text](error_create_game_example.png)
+![alt text](images/error_create_game_example.png)
 
 ### Error when joining a game
 
-![alt text](error_join_example.png)
+![alt text](images/error_join_example.png)
 
 ### Username already taken
 
-![alt text](error_username_already_taken_example.png)
+![alt text](images/error_username_already_taken_example.png)
 
 ### Wrong turn during game
 
-![alt text](errors_during_game_example.png)
+![alt text](images/errors_during_game_example.png)
 
 It is not Bob's turn
 
 ### Commands used in the wrong context
 
-![alt text](errors_wrong_context_command.png)
+![alt text](images/errors_wrong_context_command.png)
