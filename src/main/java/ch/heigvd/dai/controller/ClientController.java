@@ -6,6 +6,7 @@ import ch.heigvd.dai.applicationInterface.ClientInterface;
 import ch.heigvd.dai.nokenet.CommandName;
 import ch.heigvd.dai.nokenet.NokeNetTranslator;
 import ch.heigvd.dai.nokenet.ServerAnswer;
+import ch.heigvd.dai.nokenet.CommandName;
 
 import java.io.IOException;
 
@@ -61,7 +62,7 @@ public class ClientController {
         ui.setMyUsername(username);
 
         try {
-            network.send(translator.username(username));
+            network.send(CommandName.USERNAME + " " + username);
         } catch (IOException e) {
             System.out.println(CONNECTION_LOST_MSG);
             network.closeNetwork();
@@ -91,11 +92,11 @@ public class ClientController {
                     try {
                         switch (choice) {
                             case "1":
-                                network.send(translator.attack());
+                                network.send(CommandName.ATTACK.toString());
                                 inGameAction = false;
                                 break;
                             case "2":
-                                network.send(translator.heal());
+                                network.send(CommandName.HEAL.toString());
                                 inGameAction = false;
                                 break;
                             default:
