@@ -1,6 +1,6 @@
 package ch.heigvd.dai.applicationInterface;
 
-import ch.heigvd.dai.controller.*;
+import ch.heigvd.dai.controller.ClientController;
 import ch.heigvd.dai.nokenet.NokeNetTranslator;
 import ch.heigvd.dai.nokenet.ServerAnswer;
 
@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class ClientInterface extends AnsiColors {
 
-    private Controller controller;
+    private ClientController controller;
     private NokeNetTranslator translator;
     private String myUsername;
     private final Scanner scanner;

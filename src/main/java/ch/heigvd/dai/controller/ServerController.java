@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class ServerController extends Controller implements Runnable{
+public class ServerController implements Runnable{
 
     // ** CONTROLLER *
     private final int id;

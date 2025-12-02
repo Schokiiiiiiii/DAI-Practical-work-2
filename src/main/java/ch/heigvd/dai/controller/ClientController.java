@@ -9,7 +9,7 @@ import ch.heigvd.dai.nokenet.ServerAnswer;
 
 import java.io.IOException;
 
-public class ClientController extends Controller{
+public class ClientController {
     private ClientNetwork network;
     private ClientInterface ui;
     private NokeNetTranslator translator;
