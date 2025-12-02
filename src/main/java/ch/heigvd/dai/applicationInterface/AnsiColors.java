@@ -2,7 +2,7 @@ package ch.heigvd.dai.applicationInterface;
 
 public abstract class AnsiColors {
 
-    // Reference used : https://ss64.com/nt/syntax-ansi.html
+    // Reference used: https://ss64.com/nt/syntax-ansi.html
 
     // Unicode escape
     protected final String PREFIX = "\u001B[";
@@ -21,7 +21,6 @@ public abstract class AnsiColors {
     protected final String DARK_GREEN_B = PREFIX + "42m";
 
     // Text decorations
-    protected final String NORMAL = PREFIX + "22m";
     protected final String BOLD = PREFIX + "1m";
 
 }
