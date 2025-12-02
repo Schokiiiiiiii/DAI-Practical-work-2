@@ -227,6 +227,10 @@ features.
 We used the Java virtual threads to handle the communication with multiple clients.
 We think this is the most efficient way to handle multiple connections and sockets.
 
+### Diagram of the project
+
+![Project diagram](docs/project-diagram.svg)
+
 ### Limitations
 
 - The server can only handle one game at a time (maximum 2 players concurrently). Multiple clients can connect to the server, but they will not be able to join a game. 
