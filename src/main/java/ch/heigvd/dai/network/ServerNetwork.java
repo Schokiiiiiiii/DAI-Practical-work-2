@@ -79,21 +79,21 @@ public class ServerNetwork {
     }
 
     /**
-     * Receive a message from buffer and return the parsed version
+     * Receive a message from the buffer and return the parsed version
      * @param in buffer to read from
-     * @param socket socket to close in case connection got closed
+     * @param socket socket to close in case the connection got closed
      * @return table of strings representing the message parsed
      */
     public static String[] receive(BufferedReader in, Socket socket) {
 
-        String[] message = null;
+        String[] message;
 
         try {
 
             // get user input
             String userInput = in.readLine();
 
-            // if user input is null, client disconnected
+            // if user input is null, a client disconnected
             if (userInput == null) {
                 socket.close();
                 return null;
@@ -114,8 +114,8 @@ public class ServerNetwork {
      * Send a message in buffer
      * @param out buffer to write in
      * @param answer message to write
-     * @implNote synchronized because sending result of a P1 action to P2
-     *           and answering to a command from P2 at the same time could interfere each other
+     * @implNote synchronized because sending the result of a P1 action to P2
+     *           and answering to a command from P2 at the same time could interfere with each other
      */
     public synchronized static int  send (BufferedWriter out, String answer) {
 

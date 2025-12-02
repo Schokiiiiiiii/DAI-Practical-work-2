@@ -1,6 +1,5 @@
 package ch.heigvd.dai.network;
 
-import ch.heigvd.dai.controller.ClientController;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -11,24 +10,15 @@ import java.nio.charset.StandardCharsets;
 
 public class ClientNetwork {
 
-    private final String HOST;
-    private final int PORT;
+    private final Socket socket;
+    private final BufferedReader in;
+    private final BufferedWriter out;
 
-    private Socket socket;
-    private BufferedReader in;
-    private BufferedWriter out;
-
-    private ClientController controller;
-
-    public ClientNetwork(String HOST, int PORT) throws IOException {
-        controller = new ClientController();
-
-        this.HOST = HOST;
-        this.PORT = PORT;
+    public ClientNetwork(String host, int port) throws IOException {
 
         // Try to connect to server, throw exception if it fails,
         // should be managed by the controller
-        socket = new Socket(HOST, PORT);
+        socket = new Socket(host, port);
         in = new BufferedReader(
                 new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         out = new BufferedWriter(

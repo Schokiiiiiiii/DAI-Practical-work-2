@@ -6,7 +6,6 @@ import ch.heigvd.dai.applicationInterface.ClientInterface;
 import ch.heigvd.dai.nokenet.CommandName;
 import ch.heigvd.dai.nokenet.NokeNetTranslator;
 import ch.heigvd.dai.nokenet.ServerAnswer;
-import ch.heigvd.dai.nokenet.CommandName;
 
 import java.io.IOException;
 
@@ -28,15 +27,15 @@ public class ClientController {
 
     /**
      * Update my HP with bounds checking (0 to MAX_HP)
-     * @param delta the amount to change HP (negative for damage, positive for heal)
+     * @param delta the amount to change HP (negative for damage, positive for healing)
      */
     private void updateMyHp(int delta) {
         myHp = Math.max(0, Math.min(myHp + delta, MAX_HP));
     }
 
     /**
-     * Update other player's HP with bounds checking (0 to MAX_HP)
-     * @param delta the amount to change HP (negative for damage, positive for heal)
+     * Update another player's HP with bounds checking (0 to MAX_HP)
+     * @param delta the amount to change HP (negative for damage, positive for healing)
      */
     private void updateOtherHp(int delta) {
         otherPlayerHp = Math.max(0, Math.min(otherPlayerHp + delta, MAX_HP));
@@ -75,7 +74,7 @@ public class ClientController {
             return -1;
         }
 
-        // Start lobby loop
+        // Start a lobby loop
         manageLobby();
 
         inGame = true;
@@ -150,15 +149,15 @@ public class ClientController {
 
         ui.displayServerAnswer(responseType, parsedResponse);
 
-        switch(responseType){
-            case STATS :
+        return switch (responseType) {
+            case STATS -> {
                 try {
                     String player1Name = parsedResponse[1];
                     int player1Hp = Integer.parseInt(parsedResponse[2]);
                     String player2Name = parsedResponse[3];
                     int player2Hp = Integer.parseInt(parsedResponse[4]);
 
-                    if(username.equals(player1Name)){
+                    if (username.equals(player1Name)) {
                         myHp = player1Hp;
                         otherPlayerHp = player2Hp;
                         otherPlayerUsername = player2Name;
@@ -174,16 +173,16 @@ public class ClientController {
                     ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
                 } catch (NumberFormatException e) {
                     System.out.println("Server sent invalid HP values. Connection lost.");
-                    return false;
+                    yield false;
                 }
-                return true;
-
-            case HIT :
+                yield true;
+            }
+            case HIT -> {
                 try {
                     String hitTarget = parsedResponse[1];
                     int damage = Integer.parseInt(parsedResponse[2]);
 
-                    if(hitTarget.equals(username)){
+                    if (hitTarget.equals(username)) {
                         updateMyHp(-damage);
 
                         // We receive damage, so it's the other player who played last
@@ -195,27 +194,27 @@ public class ClientController {
 
                     ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
 
-                    // Check for game end
-                    if(myHp <= 0) {
+                    // Check for the game end
+                    if (myHp <= 0) {
                         ui.printLost();
                         inGame = false;
-                    } else if(otherPlayerHp <= 0) {
+                    } else if (otherPlayerHp <= 0) {
                         ui.printWon();
                         inGame = false;
                     }
                 } catch (NumberFormatException e) {
                     System.out.println("Server sent invalid damage value. Connection lost.");
-                    return false;
+                    yield false;
                 }
-                return true;
-
-            case HEALED :
+                yield true;
+            }
+            case HEALED -> {
                 // HEALED <healer_name> <heal_amount>
                 try {
                     String healer = parsedResponse[1];
                     int heal = Integer.parseInt(parsedResponse[2]);
 
-                    if(username.equals(healer)){
+                    if (username.equals(healer)) {
                         updateMyHp(heal);
                         myTurn = false;
                     } else {
@@ -226,21 +225,22 @@ public class ClientController {
                     ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
                 } catch (NumberFormatException e) {
                     System.out.println("Server sent invalid heal amount. Connection lost.");
-                    return false;
+                    yield false;
                 }
-                return true;
-
-            case ERROR :
+                yield true;
+            }
+            case ERROR -> {
                 // The last command sent has failed - server explicitly rejected it
                 System.out.println("Server refused connection");
-                return false;
-
-            case LOST :
+                yield false;
+            }
+            case LOST -> {
                 // LOST <username_who_lost>
                 inGame = false;
-                return true;
-        }
-        return true;
+                yield true;
+            }
+            default -> true;
+        };
     }
 
     private String[] parseServerResponse(String rawServerResponse){
@@ -248,9 +248,8 @@ public class ClientController {
         return rawServerResponse.split(" ", MAX_RESPONSE_PARTS);
     }
 
-    private int manageLobby(){
-        boolean inLobby = true;
-        while(inLobby){
+    private void manageLobby(){
+        while(true){
             ui.showLobbyMenu();
             String choice = ui.getUserInput("Choose an option");
 
@@ -261,7 +260,7 @@ public class ClientController {
                         // Handle server response
                         if(handleServerResponse()){
                             System.out.println("Waiting for another player to join the game...");
-                            return 0;
+                            return;
                         }
                         break;
                     case "2" :
@@ -269,24 +268,23 @@ public class ClientController {
                         // Server sends STATS first
                         System.out.println("\nJoining game...");
                         if(handleServerResponse()){
-                            // Then server sends OK
+                            // Then the server sends OK
                             handleServerResponse();
-                            return 0;
+                            return;
                         }
                         break;
                     case "3" :
                         network.send(CommandName.QUIT.toString());
                         network.closeNetwork();
-                        return 1;
+                        return;
                     default:
                         System.out.println("Invalid option, try again.");
                 }
             } catch (IOException e) {
                 System.out.println(CONNECTION_LOST_MSG);
                 network.closeNetwork();
-                return -1;
+                return;
             }
         }
-        return 0;
     }
 }

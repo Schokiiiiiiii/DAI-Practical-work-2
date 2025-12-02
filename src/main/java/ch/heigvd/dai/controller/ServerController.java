@@ -65,7 +65,7 @@ public class ServerController implements Runnable{
 
     // * NOKEMON SET *
     /**
-     * Player's Nokemon receive damage based on parameter
+     * Player's Nokemon receive damage based on a parameter
      * @param damage int points of damage received
      */
     public void receiveDamage(int damage) {
@@ -74,8 +74,8 @@ public class ServerController implements Runnable{
     }
 
     /**
-     * Player's Nokemon receive damage based on parameter
-     * @param heal int points of heal received
+     * Player's Nokemon receive damage based on a parameter
+     * @param heal int points of healing received
      */
     public void receiveHeal(int heal) {
         if (nokemon != null)
@@ -84,7 +84,7 @@ public class ServerController implements Runnable{
 
     /**
      * Check if this player is currently in an active game
-     * @return true if player is player1 or player2 in the game
+     * @return true if a player is player1 or player2 in the game
      */
     private boolean isInGame() {
         return game.isPlayer1(this) || game.isPlayer2(this);
@@ -98,7 +98,7 @@ public class ServerController implements Runnable{
     @Override
     public void run(){
 
-        // confirm controller is running
+        // confirm the controller is running
         System.out.println("[Controller#" + id + "] Connected to client");
 
         // try-with-resources
@@ -106,13 +106,13 @@ public class ServerController implements Runnable{
              in;
              out) {
 
-            // keep answering until socket is closed
+            // keep answering until the socket is closed
             while (!socket.isClosed()) {
 
                 // read a message from the client
                 String[] message = ServerNetwork.receive(in, socket);
 
-                // if message is null, socket got close, meaning the client disconnected
+                // if a message is null, the socket got close, meaning the client disconnected
                 if (message == null) {
                     break;
                 }
@@ -128,7 +128,7 @@ public class ServerController implements Runnable{
         } catch (IOException e) {
             System.out.println("[Controller#" + id + "] Error reading/writing from socket: " + e);
         } finally {
-            // Cleanup even if exception occurs
+            // Cleanup even if an exception occurs
             handleDisconnect();
             ServerNetwork.decreaseNbThreads();
         }
@@ -142,7 +142,7 @@ public class ServerController implements Runnable{
      */
     public int handleMessage(String[] message) {
 
-        // try to read command from message
+        // try to read command from a message
         CommandName command = ServerInterface.extractCommand(message);
 
         // switch over the possible commands
@@ -167,7 +167,7 @@ public class ServerController implements Runnable{
      * Sets the username for that player
      * @param name string the player wants as a name
      * @return string representing the answer
-     * @implNote synchronized because players is shared data
+     * @implNote synchronized because players are shared data
      */
     private synchronized String setName(String name) {
 
@@ -175,7 +175,7 @@ public class ServerController implements Runnable{
         if (username != null) {
             ServerInterface.printError(id, ErrorCode.NOT_NOW);
             return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
-        // if username is already taken
+        // if the username is already taken
         } else if (players.contains(name)) {
             ServerInterface.printError(id, ErrorCode.USERNAME_TAKEN);
             return ServerAnswer.ERROR + " " + ErrorCode.USERNAME_TAKEN.getCode();
@@ -205,7 +205,7 @@ public class ServerController implements Runnable{
             if (username == null || isInGame()) {
                 ServerInterface.printError(id, ErrorCode.NOT_NOW);
                 return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
-            // no player 1 (lobby not created)
+            // no player 1 (a lobby not created)
             } else if (!game.isPlayer1(null)) {
                 ServerInterface.printError(id, ErrorCode.EXISTING_LOBBY);
                 return ServerAnswer.ERROR + " " + ErrorCode.EXISTING_LOBBY.getCode();
@@ -231,21 +231,21 @@ public class ServerController implements Runnable{
         // Game object is shared
         synchronized(game) {
 
-            // choosing his name or already in game
+            // choosing his name or already in the game
             if (username == null || isInGame()) {
                 ServerInterface.printError(id, ErrorCode.NOT_NOW);
                 return ServerAnswer.ERROR + " " + ErrorCode.NOT_NOW.getCode();
-            // no player 1 (lobby not created)
+            // no player 1 (a lobby not created)
             } else if (game.isPlayer1(null)) {
                 ServerInterface.printError(id, ErrorCode.NO_LOBBY);
                 return ServerAnswer.ERROR + " " + ErrorCode.NO_LOBBY.getCode();
-            // already a player 2
+            // already player 2
             } else if (!game.isPlayer2(null)) {
                 ServerInterface.printError(id, ErrorCode.LOBBY_FULL);
                 return ServerAnswer.ERROR + " " + ErrorCode.LOBBY_FULL.getCode();
             }
 
-            // initialize nokemon and set second player and turn
+            // initialize nokemon and set a second player and turn
             this.nokemon = new Nokemon();
             game.setPlayer2(this);
             game.setTurn(this);
@@ -276,7 +276,7 @@ public class ServerController implements Runnable{
         // calculate random damage
         int damage = Nokemon.BASE_DAMAGE + random.nextInt(Nokemon.DEVIATION_DAMAGE);
 
-        // attack other player
+        // attack another player
         game.attackOtherPlayer(this, damage);
 
         // build message
@@ -324,10 +324,10 @@ public class ServerController implements Runnable{
         // print message log
         System.out.println("[Controller#" + id + "] Sent message '" + message + "' to both players");
 
-        // send result of heal to other player
+        // send result of healing to other player
         game.sendToOtherPlayer(this, message);
 
-        // return the result of heal
+        // return the result of healing
         return message;
     }
 
