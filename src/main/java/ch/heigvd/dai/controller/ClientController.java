@@ -200,23 +200,18 @@ public class ClientController {
                     if (hitTarget.equals(username)) {
                         updateMyHp(-damage);
 
-                        // We receive damage, so it's the other player who played last
-                        myTurn = true;
+                        // We received damage, so the other player just played
+                        // If still alive, we can play. If dead, wait for LOST message
+                        myTurn = myHp > 0;
                     } else {
                         updateOtherHp(-damage);
+
+                        // Opponent received damage, meaning we just played
                         myTurn = false;
                     }
 
                     ui.displayGameStats(username, myHp, otherPlayerUsername, otherPlayerHp);
-
-                    // Check for the game end
-                    if (myHp <= 0) {
-                        ui.printLost();
-                        inGame = false;
-                    } else if (otherPlayerHp <= 0) {
-                        ui.printWon();
-                        inGame = false;
-                    }
+                    
                 } catch (NumberFormatException e) {
                     System.out.println("Server sent invalid damage value. Connection lost.");
                     yield false;
