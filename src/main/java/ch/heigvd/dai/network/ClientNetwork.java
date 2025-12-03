@@ -29,6 +29,7 @@ public class ClientNetwork {
         this("localhost", 7270);
     }
 
+    // warning is normal, better this way
     public boolean isConnected() {
         return socket != null && !socket.isClosed() && socket.isConnected();
     }
