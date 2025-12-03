@@ -57,21 +57,23 @@ public class ClientController {
             return -1;
         }
 
-        username = ui.getUsername();
-        ui.setMyUsername(username);
+        boolean wrongUsername = false;
 
-        try {
-            network.send(CommandName.USERNAME + " " + username);
-        } catch (IOException e) {
-            System.out.println(CONNECTION_LOST_MSG);
-            network.closeNetwork();
-            return -1;
-        }
+        while(!wrongUsername) {
 
-        // Get server's response to username
-        if (!handleServerResponse()) {
-            network.closeNetwork();
-            return -1;
+            username = ui.getUsername();
+            ui.setMyUsername(username);
+
+            try {
+                network.send(CommandName.USERNAME + " " + username);
+            } catch (IOException e) {
+                System.out.println(CONNECTION_LOST_MSG);
+                network.closeNetwork();
+                return -1;
+            }
+
+            // Get server's response to username
+            wrongUsername = handleServerResponse();
         }
 
         while(true){
