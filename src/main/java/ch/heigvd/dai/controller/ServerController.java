@@ -6,6 +6,7 @@ import ch.heigvd.dai.game.*;
 import ch.heigvd.dai.nokenet.CommandName;
 import ch.heigvd.dai.nokenet.ErrorCode;
 import ch.heigvd.dai.nokenet.ServerAnswer;
+import ch.heigvd.dai.nokenet.Utils;
 
 import java.io.*;
 import java.net.Socket;
@@ -143,7 +144,7 @@ public class ServerController implements Runnable{
     public int handleMessage(String[] message) {
 
         // try to read command from a message
-        CommandName command = ServerInterface.extractCommand(message);
+        CommandName command = Utils.extractCommand(message);
 
         // switch over the possible commands
         String answer = switch (command) {

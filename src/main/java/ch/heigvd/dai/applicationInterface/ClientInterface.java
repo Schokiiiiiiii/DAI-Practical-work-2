@@ -1,7 +1,5 @@
 package ch.heigvd.dai.applicationInterface;
 
-import ch.heigvd.dai.controller.ClientController;
-import ch.heigvd.dai.nokenet.NokeNetTranslator;
 import ch.heigvd.dai.nokenet.ServerAnswer;
 
 import java.util.Scanner;

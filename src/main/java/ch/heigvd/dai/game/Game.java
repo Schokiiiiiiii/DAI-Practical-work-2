@@ -20,6 +20,7 @@ public class Game {
         return player == player2;
     }
 
+    // warning is normal, better to have function this way
     public boolean hasTurn(ServerController player) {
         return turn == player;
     }

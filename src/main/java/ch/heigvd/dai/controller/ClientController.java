@@ -4,15 +4,14 @@ import ch.heigvd.dai.network.ClientNetwork;
 import ch.heigvd.dai.applicationInterface.ClientInterface;
 
 import ch.heigvd.dai.nokenet.CommandName;
-import ch.heigvd.dai.nokenet.NokeNetTranslator;
 import ch.heigvd.dai.nokenet.ServerAnswer;
+import ch.heigvd.dai.nokenet.Utils;
 
 import java.io.IOException;
 
 public class ClientController {
     private ClientNetwork network;
     private ClientInterface ui;
-    private NokeNetTranslator translator;
 
     private boolean inGame = false;
     private boolean myTurn = false;
@@ -44,7 +43,6 @@ public class ClientController {
     private void createNetwork(String host, int port) throws IOException {
         this.network = new ClientNetwork(host, port);
         this.ui = new ClientInterface();
-        this.translator = new NokeNetTranslator();
     }
 
 
@@ -133,7 +131,6 @@ public class ClientController {
                     inGame = false;
                 }
             }
-            inGame = false;
 
             // Reset game stats
             myHp = 0;
@@ -162,7 +159,7 @@ public class ClientController {
         }
 
         String[] parsedResponse = parseServerResponse(rawServerResponse);
-        ServerAnswer responseType = translator.extractResponse(parsedResponse);
+        ServerAnswer responseType = Utils.extractResponse(parsedResponse);
 
         ui.displayServerAnswer(responseType, parsedResponse);
 

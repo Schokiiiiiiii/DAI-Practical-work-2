@@ -1,24 +1,10 @@
 package ch.heigvd.dai.applicationInterface;
 
-import ch.heigvd.dai.nokenet.CommandName;
 import ch.heigvd.dai.nokenet.ErrorCode;
 
 import java.util.ArrayList;
 
 public class ServerInterface {
-
-    public static CommandName extractCommand(String[] message) {
-
-        // try to get the command
-        CommandName command = null;
-        try {
-            command = CommandName.valueOf(message[0].toUpperCase());
-        } catch (IllegalArgumentException e) {
-            // command is null and will be handled by switch
-        }
-
-        return command;
-    }
 
     public static void printPlayers(int id, ArrayList<String> players) {
         System.out.println("[Controller#" + id + "] Current list of users " + players);
