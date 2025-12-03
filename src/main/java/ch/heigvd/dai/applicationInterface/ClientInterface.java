@@ -23,7 +23,18 @@ public class ClientInterface extends AnsiColors {
     }
 
     public String getUsername(){
-        return getUserInput( BOLD + "Enter your username" + RESET);
+        String username;
+        boolean retry;
+        do{
+            retry = false;
+            username = getUserInput( BOLD + "Enter your username (no spaces)" + RESET);
+            if(username.contains(" ")){
+                System.out.println(BRIGHT_RED_B + BLACK_F + "ERROR: Username cannot contain spaces" + RESET);
+                retry = true;
+            }
+        } while (retry);
+
+        return username;
     }
 
     public void displayServerAnswer(ServerAnswer command, String[] commandArgs){
