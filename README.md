@@ -206,8 +206,6 @@ Push to GHCR
 docker push ghcr.io/YOUR_USERNAME/YOUR_REPOSITORY:IMAGE_NAME-latest
 ```
 
-More information about how to authenticate to the GitHub Container Registry can be found [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
-
 ## Implementation
 
 ### Architecture
